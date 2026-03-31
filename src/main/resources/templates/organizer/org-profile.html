@@ -2,15 +2,10 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{shared/organizer-layout :: head('Thông tin tổ chức')}"></head>
 <body>
-<div th:replace="~{shared/organizer-layout :: sidebar('dashboard')}"></div>
+<div th:replace="~{shared/organizer-layout :: sidebar('profile')}"></div>
 <div class="main-content">
   <div class="content-area">
-    <div class="d-flex align-items-center mb-4">
-      <a th:href="@{/organizer/dashboard}" class="btn btn-outline-secondary btn-sm me-3">
-        <i class="bi bi-arrow-left"></i>
-      </a>
-      <h3 class="fw-bold mb-0"><i class="bi bi-building me-2"></i>Chỉnh sửa thông tin tổ chức</h3>
-    </div>
+    <h3 class="fw-bold mb-4"><i class="bi bi-building-gear me-2"></i>Thông tin tổ chức</h3>
     <div th:replace="~{shared/organizer-layout :: flash}"></div>
 
     <div class="card border-0 shadow-sm p-4" style="max-width:800px">

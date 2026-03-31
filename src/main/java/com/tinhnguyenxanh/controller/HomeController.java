@@ -28,7 +28,13 @@ public class HomeController {
 
     @GetMapping({"/", "/home"})
     public String index(Model model) {
-        model.addAttribute("approvedEvents", eventService.getApprovedEvents());
+        var allApproved = eventService.getApprovedEvents();
+        var top3 = allApproved.stream()
+                .sorted(java.util.Comparator.comparingInt(
+                        com.tinhnguyenxanh.dto.EventDTO::getRegisteredCount).reversed())
+                .limit(3)
+                .toList();
+        model.addAttribute("approvedEvents", top3);
         return "home/index";
     }
 

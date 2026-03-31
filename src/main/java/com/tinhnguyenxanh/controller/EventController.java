@@ -13,10 +13,12 @@ import org.springframework.transaction.annotation.Transactional;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
 import java.time.LocalDateTime;
 import java.util.List;
+import java.util.Map;
 
 @Controller
 @RequestMapping("/events")
@@ -34,9 +36,27 @@ public class EventController {
     private final EventRepository eventRepo;
 
     @GetMapping
-    public String listEvents(Model model) {
-        model.addAttribute("events", eventService.getApprovedEvents());
+    public String listEvents(@RequestParam(defaultValue = "0") int page,
+                             @RequestParam(required = false) String category,
+                             Model model) {
+        int pageSize = 6;
+        var all = eventService.getApprovedEvents();
+        // Filter by category if provided
+        if (category != null && !category.isBlank()) {
+            all = all.stream()
+                .filter(e -> category.equals(String.valueOf(e.getCategoryId())))
+                .toList();
+            model.addAttribute("selectedCategory", category);
+        }
+        int total = all.size();
+        int totalPages = Math.max(1, (int) Math.ceil((double) total / pageSize));
+        page = Math.max(0, Math.min(page, totalPages - 1));
+        var paged = all.stream().skip((long) page * pageSize).limit(pageSize).toList();
+        model.addAttribute("events", paged);
         model.addAttribute("categories", categoryRepo.findAll());
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("totalEvents", total);
         return "event/index";
     }
 
@@ -181,6 +201,34 @@ public class EventController {
 
         redirectAttrs.addFlashAttribute("success", "Đã thêm bình luận");
         return "redirect:/events/" + id;
+    }
+
+
+    @PostMapping("/{id}/favorite/ajax")
+    @Transactional
+    @ResponseBody
+    public ResponseEntity<Map<String,Object>> toggleFavoriteAjax(
+            @PathVariable Integer id,
+            @AuthenticationPrincipal CustomUserDetails userDetails) {
+        if (userDetails == null)
+            return ResponseEntity.status(401).build();
+        try {
+            boolean favorited;
+            if (favoriteRepo.countByEventIdAndUserId(id, userDetails.getId()) > 0) {
+                favoriteRepo.deleteByEventIdAndUserId(id, userDetails.getId());
+                favorited = false;
+            } else {
+                EventFavorite fav = new EventFavorite();
+                fav.setEvent(eventRepo.getReferenceById(id));
+                fav.setUser(userRepo.getReferenceById(userDetails.getId()));
+                fav.setFavoriteDate(LocalDateTime.now());
+                favoriteRepo.save(fav);
+                favorited = true;
+            }
+            return ResponseEntity.ok(Map.of("favorited", favorited));
+        } catch (Exception ex) {
+            return ResponseEntity.status(500).build();
+        }
     }
 
     @GetMapping("/my-registrations")

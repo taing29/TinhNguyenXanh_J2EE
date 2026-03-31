@@ -88,5 +88,42 @@
   </div>
 </div>
 <th:block th:replace="~{shared/organizer-layout :: scripts}"></th:block>
+<script>
+(function() {
+  // Set min for startTime = now (rounded to minute)
+  function pad(n) { return String(n).padStart(2,'0'); }
+  const now = new Date();
+  const localNow = new Date(now.getTime() - now.getTimezoneOffset() * 60000)
+    .toISOString().slice(0,16);
+
+  const startInput = document.querySelector('input[name="startTime"], input[th\\:field="*{startTime}"]') ||
+                     document.querySelector('input[type="datetime-local"]');
+  const endInput   = document.querySelectorAll('input[type="datetime-local"]')[1];
+
+  // Try by name attr
+  const allDT = document.querySelectorAll('input[type="datetime-local"]');
+  if (allDT.length >= 1) allDT[0].min = localNow;
+
+  if (allDT.length >= 2) {
+    allDT[0].addEventListener('change', () => {
+      allDT[1].min = allDT[0].value || localNow;
+      if (allDT[1].value && allDT[1].value <= allDT[0].value) {
+        allDT[1].value = '';
+        allDT[1].setCustomValidity('Thời gian kết thúc phải sau thời gian bắt đầu');
+      } else {
+        allDT[1].setCustomValidity('');
+      }
+    });
+    allDT[1].addEventListener('change', () => {
+      if (allDT[0].value && allDT[1].value <= allDT[0].value) {
+        allDT[1].setCustomValidity('Thời gian kết thúc phải sau thời gian bắt đầu');
+        allDT[1].reportValidity();
+      } else {
+        allDT[1].setCustomValidity('');
+      }
+    });
+  }
+})();
+</script>
 </body>
 </html>

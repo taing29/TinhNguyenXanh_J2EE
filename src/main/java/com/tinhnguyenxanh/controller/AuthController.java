@@ -93,10 +93,11 @@ public class AuthController {
                                 @RequestParam(required = false) String age,
                                 @RequestParam(required = false) String bio,
                                 @RequestParam(required = false) String skills,
+                                @RequestParam(value = "avatarFile", required = false) org.springframework.web.multipart.MultipartFile avatarFile,
                                 RedirectAttributes redirectAttrs) {
         if (userDetails == null) return "redirect:/auth/login";
         boolean ok = userService.updateVolunteerProfile(
-                userDetails.getId(), fullName, phone, address, bio, skills, age);
+                userDetails.getId(), fullName, phone, address, bio, skills, age, avatarFile);
         if (ok) redirectAttrs.addFlashAttribute("success", "Đã cập nhật thông tin cá nhân");
         else redirectAttrs.addFlashAttribute("error", "Cập nhật thất bại");
         return "redirect:/auth/profile";

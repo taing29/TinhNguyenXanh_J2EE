@@ -27,7 +27,7 @@
         <a th:href="@{/events}" class="btn btn-outline-success btn-sm">Xem tất cả</a>
       </div>
       <div class="row g-4">
-        <div th:each="event,iter : ${approvedEvents}" th:if="${iter.index < 6}" class="col-md-4">
+        <div th:each="event : ${approvedEvents}" class="col-md-4">
           <div class="card h-100 border-0" style="box-shadow:0 2px 8px rgba(0,0,0,.1);transition:.3s" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.15)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 8px rgba(0,0,0,.1)'">
             <img th:if="${event.images != null}" th:src="${event.images}" class="card-img-top" style="height:200px;object-fit:cover" alt="event"/>
             <img th:unless="${event.images != null}" src="https://via.placeholder.com/400x200?text=No+Image" class="card-img-top" style="height:200px;object-fit:cover" alt="event"/>
@@ -43,13 +43,12 @@
                   <span th:text="${event.registeredCount + '/' + event.maxVolunteers}">0/0</span>
                 </small>
                 <div class="d-flex gap-1">
-                  <form sec:authorize="isAuthenticated()"
-                        th:action="@{/events/{id}/favorite(id=${event.id})}" method="post" class="d-inline">
-                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                    <button type="submit" class="btn btn-outline-danger btn-sm" title="Yêu thích">
-                      <i class="bi bi-heart"></i>
-                    </button>
-                  </form>
+                  <button sec:authorize="isAuthenticated()"
+                          class="btn-fav btn btn-outline-danger btn-sm"
+                          th:attr="data-event-id=${event.id}"
+                          onclick="toggleFav(this)" title="Yêu thích">
+                    <i class="bi bi-heart"></i>
+                  </button>
                   <a th:href="@{/events/{id}(id=${event.id})}" class="btn btn-primary btn-sm">Chi tiết</a>
                 </div>
               </div>
@@ -103,5 +102,39 @@
 
 <footer th:replace="~{shared/layout :: footer}"></footer>
 <th:block th:replace="~{shared/layout :: scripts}"></th:block>
+<style>
+.btn-fav.favorited { background:#dc3545;border-color:#dc3545;color:#fff; }
+.btn-fav:not(.favorited) { background:transparent; }
+</style>
+<script th:inline="javascript">
+const csrfToken = /*[[${_csrf != null ? _csrf.token : ''}]]*/ '';
+const csrfHeader = /*[[${_csrf != null ? _csrf.headerName : 'X-CSRF-TOKEN'}]]*/ 'X-CSRF-TOKEN';
+async function toggleFav(btn) {
+  const eventId = btn.dataset.eventId;
+  try {
+    const res = await fetch(`/events/${eventId}/favorite/ajax`, {
+      method:'POST', headers:{[csrfHeader]:csrfToken,'Content-Type':'application/json'}
+    });
+    if (res.ok) {
+      const data = await res.json();
+      btn.classList.toggle('favorited', data.favorited);
+      btn.querySelector('i').className = data.favorited ? 'bi bi-heart-fill' : 'bi bi-heart';
+      showToast(data.favorited ? 'Đã thêm vào yêu thích ❤️' : 'Đã bỏ yêu thích');
+    }
+  } catch(e) {}
+}
+function showToast(msg) {
+  let t = document.getElementById('fav-toast');
+  if (!t) {
+    t = document.createElement('div');
+    t.id = 'fav-toast';
+    t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#2e7d32;color:#fff;padding:10px 20px;border-radius:8px;z-index:9999;font-size:.9rem;box-shadow:0 4px 12px rgba(0,0,0,.2);transition:opacity .3s';
+    document.body.appendChild(t);
+  }
+  t.textContent = msg; t.style.opacity = '1';
+  clearTimeout(t._timer);
+  t._timer = setTimeout(() => { t.style.opacity = '0'; }, 2500);
+}
+</script>
 </body>
 </html>

@@ -27,8 +27,17 @@ public class OrganizationController {
     private final UserRepository userRepo;
 
     @GetMapping
-    public String listOrganizations(Model model) {
-        model.addAttribute("organizations", orgService.getAllVerified());
+    public String listOrganizations(@RequestParam(defaultValue = "0") int page, Model model) {
+        int pageSize = 6;
+        var all = orgService.getAllVerified();
+        int total = all.size();
+        int totalPages = Math.max(1, (int) Math.ceil((double) total / pageSize));
+        page = Math.max(0, Math.min(page, totalPages - 1));
+        var paged = all.stream().skip((long) page * pageSize).limit(pageSize).toList();
+        model.addAttribute("organizations", paged);
+        model.addAttribute("currentPage", page);
+        model.addAttribute("totalPages", totalPages);
+        model.addAttribute("totalOrgs", total);
         return "organization/index";
     }
 

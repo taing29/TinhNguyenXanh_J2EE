@@ -22,6 +22,7 @@ public class UserService {
     private final UserRepository userRepo;
     private final VolunteerRepository volunteerRepo;
     private final PasswordEncoder passwordEncoder;
+    private final com.tinhnguyenxanh.service.FileUploadService fileUploadService;
 
     @Transactional
     public boolean register(RegisterDTO dto) {
@@ -68,7 +69,9 @@ public class UserService {
     }
 
     @Transactional
-    public boolean updateVolunteerProfile(Long userId, String fullName, String phone, String address, String bio, String skills, String age) {
+    public boolean updateVolunteerProfile(Long userId, String fullName, String phone, String address,
+                                          String bio, String skills, String age,
+                                          org.springframework.web.multipart.MultipartFile avatarFile) {
         try {
             User user = userRepo.findById(userId).orElse(null);
             if (user == null) return false;
@@ -76,6 +79,14 @@ public class UserService {
             if (phone != null) user.setPhoneNumber(phone.trim());
             if (address != null) user.setAddress(address.trim());
             if (age != null) user.setAge(age.trim());
+            if (avatarFile != null && !avatarFile.isEmpty()) {
+                try {
+                    String avatarPath = fileUploadService.uploadFile(avatarFile, "avatars");
+                    user.setAvatarPath(avatarPath);
+                } catch (Exception ex) {
+                    System.err.println("[AVATAR UPLOAD ERROR] " + ex.getMessage());
+                }
+            }
             userRepo.save(user);
 
             com.tinhnguyenxanh.entity.Volunteer vol = volunteerRepo.findByUser_Id(userId).orElse(null);
@@ -85,6 +96,7 @@ public class UserService {
                 if (address != null) vol.setAddress(address.trim());
                 if (bio != null) vol.setBio(bio.trim());
                 if (skills != null) vol.setSkills(skills.trim());
+                if (user.getAvatarPath() != null) vol.setAvatarUrl(user.getAvatarPath());
                 volunteerRepo.save(vol);
             }
             return true;

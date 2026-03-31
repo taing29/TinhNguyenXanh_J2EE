@@ -20,6 +20,7 @@ public class OrganizationService {
     private final OrganizationRepository orgRepo;
     private final UserRepository userRepo;
     private final FileUploadService fileUploadService;
+    private final com.tinhnguyenxanh.repository.ReviewRepository reviewRepo;
 
     public List<OrganizationDTO> getAllVerified() {
         return orgRepo.findByIsApprovedTrue().stream()
@@ -183,8 +184,16 @@ public class OrganizationService {
         dto.setVerified(o.isVerified());
         dto.setApproved(o.isApproved());
         dto.setJoinedDate(o.getJoinedDate());
-        dto.setAverageRating(o.getAverageRating());
-        dto.setTotalReviews(o.getTotalReviews());
+        // Compute live from reviews (stored field may be stale)
+        if (o.getReviews() != null && !o.getReviews().isEmpty()) {
+            double avg = o.getReviews().stream().mapToInt(r -> r.getRating()).average().orElse(0);
+            dto.setAverageRating(java.math.BigDecimal.valueOf(avg).setScale(1, java.math.RoundingMode.HALF_UP));
+            dto.setTotalReviews(o.getReviews().size());
+        } else {
+            // fallback to DB-stored value
+            dto.setAverageRating(o.getAverageRating());
+            dto.setTotalReviews(o.getTotalReviews() != null ? o.getTotalReviews() : 0);
+        }
         dto.setFoundedDate(o.getFoundedDate());
         dto.setTaxCode(o.getTaxCode());
         dto.setLegalRepresentative(o.getLegalRepresentative());
