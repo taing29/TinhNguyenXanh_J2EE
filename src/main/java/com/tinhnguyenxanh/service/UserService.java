@@ -68,6 +68,32 @@ public class UserService {
     }
 
     @Transactional
+    public boolean updateVolunteerProfile(Long userId, String fullName, String phone, String address, String bio, String skills, String age) {
+        try {
+            User user = userRepo.findById(userId).orElse(null);
+            if (user == null) return false;
+            if (fullName != null && !fullName.isBlank()) user.setFullName(fullName.trim());
+            if (phone != null) user.setPhoneNumber(phone.trim());
+            if (address != null) user.setAddress(address.trim());
+            if (age != null) user.setAge(age.trim());
+            userRepo.save(user);
+
+            com.tinhnguyenxanh.entity.Volunteer vol = volunteerRepo.findByUser_Id(userId).orElse(null);
+            if (vol != null) {
+                if (fullName != null && !fullName.isBlank()) vol.setFullName(fullName.trim());
+                if (phone != null) vol.setPhone(phone.trim());
+                if (address != null) vol.setAddress(address.trim());
+                if (bio != null) vol.setBio(bio.trim());
+                if (skills != null) vol.setSkills(skills.trim());
+                volunteerRepo.save(vol);
+            }
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    @Transactional
     public boolean lockUser(Long userId) {
         User user = userRepo.findById(userId).orElse(null);
         if (user == null) return false;

@@ -5,8 +5,15 @@
 <div th:replace="~{shared/organizer-layout :: sidebar('dashboard')}"></div>
 <div class="main-content">
   <div class="content-area">
-    <h3 class="fw-bold mb-1">Xin chào, <span th:text="${org.name}">Tổ chức</span> 👋</h3>
-    <p class="text-muted mb-4">Quản lý các sự kiện của bạn</p>
+    <div class="d-flex justify-content-between align-items-start mb-4">
+      <div>
+        <h3 class="fw-bold mb-1">Xin chào, <span th:text="${org.name}">Tổ chức</span> 👋</h3>
+        <p class="text-muted mb-0">Quản lý các sự kiện của bạn</p>
+      </div>
+      <a th:href="@{/organizer/profile}" class="btn btn-outline-success btn-sm">
+        <i class="bi bi-pencil me-1"></i>Chỉnh sửa tổ chức
+      </a>
+    </div>
     <div th:replace="~{shared/organizer-layout :: flash}"></div>
 
     <div class="row g-4 mb-5">

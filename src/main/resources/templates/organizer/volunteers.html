@@ -24,7 +24,10 @@
           <tbody>
             <tr th:each="reg,iter : ${registrations}">
               <td th:text="${iter.count}"></td>
-              <td th:text="${reg.fullName}"></td>
+              <td>
+                <a th:href="@{/organizer/volunteers/{id}/profile(id=${reg.volunteer.id})}"
+                   th:text="${reg.fullName}" class="text-decoration-none fw-semibold"></a>
+              </td>
               <td th:text="${reg.phone}"></td>
               <td><small th:text="${#strings.abbreviate(reg.reason, 60)}"></small></td>
               <td th:text="${#temporals.format(reg.registeredDate,'dd/MM/yyyy')}"></td>
@@ -37,10 +40,12 @@
                 <div th:if="${reg.status == 'Pending'}" class="btn-group btn-group-sm">
                   <form th:action="@{/organizer/registrations/{id}/approve(id=${reg.id})}" method="post" class="d-inline">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input type="hidden" name="returnUrl" th:value="@{/organizer/events/{id}/volunteers(id=${event.id})}"/>
                     <button type="submit" class="btn btn-success btn-sm" title="Xác nhận"><i class="bi bi-check-lg"></i></button>
                   </form>
                   <form th:action="@{/organizer/registrations/{id}/reject(id=${reg.id})}" method="post" class="d-inline">
                     <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <input type="hidden" name="returnUrl" th:value="@{/organizer/events/{id}/volunteers(id=${event.id})}"/>
                     <button type="submit" class="btn btn-danger btn-sm" title="Từ chối"><i class="bi bi-x-lg"></i></button>
                   </form>
                 </div>

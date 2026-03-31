@@ -149,6 +149,18 @@ public class EventService {
     }
 
     @Transactional
+    public boolean toggleHidden(Integer eventId, Integer organizationId) {
+        Event event = eventRepo.findById(eventId).orElse(null);
+        if (event == null) return false;
+        if (organizationId != null && !organizationId.equals(event.getOrganization().getId())) return false;
+        event.setHidden(!event.isHidden());
+        if (event.isHidden()) event.setHiddenAt(java.time.LocalDateTime.now());
+        else event.setHiddenAt(null);
+        eventRepo.save(event);
+        return true;
+    }
+
+    @Transactional
     public boolean deleteEvent(Integer eventId) {
         if (!eventRepo.existsById(eventId)) return false;
         eventRepo.deleteById(eventId);
@@ -172,6 +184,8 @@ public class EventService {
                 .maxVolunteers(e.getMaxVolunteers())
                 .registeredCount(registrationRepo.countByEvent_IdAndStatusIgnoreCase(e.getId(), "Confirmed"))
                 .images(e.getImages())
+                .isHidden(e.isHidden())
+                .hiddenReason(e.getHiddenReason())
                 .build();
     }
 }

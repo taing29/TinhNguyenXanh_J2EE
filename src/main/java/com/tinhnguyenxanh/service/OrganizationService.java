@@ -22,7 +22,7 @@ public class OrganizationService {
     private final FileUploadService fileUploadService;
 
     public List<OrganizationDTO> getAllVerified() {
-        return orgRepo.findByVerifiedTrue().stream()
+        return orgRepo.findByIsApprovedTrue().stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
@@ -153,6 +153,10 @@ public class OrganizationService {
             System.err.println("[ORG UPDATE ERROR] " + e.getMessage());
             return false;
         }
+    }
+
+    public OrganizationDTO toPublicDTO(Organization o) {
+        return toDTO(o);
     }
 
     private OrganizationDTO toDTO(Organization o) {
