@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{shared/layout :: head('Về chúng tôi')}">
+  <style>
+    .hero-about { background: linear-gradient(135deg, #1b5e20, #2e7d32, #43a047); color: #fff; padding: 80px 0; }
+    .value-card { border: none; border-radius: 12px; box-shadow: 0 2px 12px rgba(0,0,0,.08); transition: .3s; }
+    .value-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.12); }
+    .stat-circle { width: 90px; height: 90px; border-radius: 50%; background: #e8f5e9; display: flex; align-items: center; justify-content: center; margin: 0 auto 12px; }
+  </style>
+</head>
+<body>
+<nav th:replace="~{shared/layout :: navbar('about')}"></nav>
+<div th:replace="~{shared/layout :: flash}"></div>
+
+<main>
+  <!-- HERO -->
+  <section class="hero-about text-center">
+    <div class="container">
+      <h1 class="display-5 fw-bold mb-3">🌿 Về Tình Nguyện Xanh</h1>
+      <p class="lead mb-0" style="max-width:600px;margin:0 auto">
+        Nền tảng kết nối tình nguyện viên và các tổ chức cộng đồng,
+        cùng nhau lan toả yêu thương và xây dựng xã hội xanh hơn.
+      </p>
+    </div>
+  </section>
+
+  <!-- SỨ MỆNH -->
+  <section class="py-5">
+    <div class="container">
+      <div class="row align-items-center g-5">
+        <div class="col-md-6">
+          <h2 class="fw-bold text-success mb-3">Sứ mệnh của chúng tôi</h2>
+          <p class="text-secondary lh-lg">
+            Tình Nguyện Xanh được thành lập với mục tiêu tạo ra một hệ sinh thái tình nguyện
+            minh bạch, tiện lợi và hiệu quả. Chúng tôi tin rằng mỗi cá nhân đều có thể tạo ra
+            sự thay đổi tích cực cho cộng đồng, dù nhỏ hay lớn.
+          </p>
+          <p class="text-secondary lh-lg">
+            Thông qua nền tảng của mình, chúng tôi kết nối hàng nghìn tình nguyện viên với
+            các tổ chức phi lợi nhuận, giúp các dự án cộng đồng được triển khai nhanh hơn,
+            hiệu quả hơn.
+          </p>
+        </div>
+        <div class="col-md-6 text-center">
+          <div class="row g-3">
+            <div class="col-6">
+              <div class="p-4 rounded-3 bg-light">
+                <div class="stat-circle"><i class="bi bi-calendar-check text-success" style="font-size:2rem"></i></div>
+                <h3 class="fw-bold text-success">500+</h3>
+                <p class="text-muted mb-0">Sự kiện tổ chức</p>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-4 rounded-3 bg-light">
+                <div class="stat-circle"><i class="bi bi-people text-success" style="font-size:2rem"></i></div>
+                <h3 class="fw-bold text-success">10,000+</h3>
+                <p class="text-muted mb-0">Tình nguyện viên</p>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-4 rounded-3 bg-light">
+                <div class="stat-circle"><i class="bi bi-building text-success" style="font-size:2rem"></i></div>
+                <h3 class="fw-bold text-success">50+</h3>
+                <p class="text-muted mb-0">Tổ chức đối tác</p>
+              </div>
+            </div>
+            <div class="col-6">
+              <div class="p-4 rounded-3 bg-light">
+                <div class="stat-circle"><i class="bi bi-heart text-success" style="font-size:2rem"></i></div>
+                <h3 class="fw-bold text-success">5 năm</h3>
+                <p class="text-muted mb-0">Hoạt động</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- GIÁ TRỊ CỐT LÕI -->
+  <section class="py-5 bg-light">
+    <div class="container">
+      <h2 class="fw-bold text-success text-center mb-5">Giá trị cốt lõi</h2>
+      <div class="row g-4">
+        <div class="col-md-3">
+          <div class="card value-card p-4 text-center h-100">
+            <i class="bi bi-heart-fill text-danger display-5 mb-3"></i>
+            <h5 class="fw-bold">Tận tâm</h5>
+            <p class="text-muted small">Mỗi hành động nhỏ đều xuất phát từ trái tim chân thành và mong muốn giúp đỡ cộng đồng.</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card value-card p-4 text-center h-100">
+            <i class="bi bi-shield-check text-success display-5 mb-3"></i>
+            <h5 class="fw-bold">Minh bạch</h5>
+            <p class="text-muted small">Mọi hoạt động và thông tin đều được công khai, đảm bảo sự tin tưởng từ cộng đồng.</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card value-card p-4 text-center h-100">
+            <i class="bi bi-people-fill text-primary display-5 mb-3"></i>
+            <h5 class="fw-bold">Cộng đồng</h5>
+            <p class="text-muted small">Chúng tôi xây dựng sức mạnh từ tập thể — mỗi cá nhân là một phần không thể thiếu.</p>
+          </div>
+        </div>
+        <div class="col-md-3">
+          <div class="card value-card p-4 text-center h-100">
+            <i class="bi bi-leaf-fill text-success display-5 mb-3"></i>
+            <h5 class="fw-bold">Bền vững</h5>
+            <p class="text-muted small">Hướng tới tương lai xanh, bền vững cho môi trường và xã hội Việt Nam.</p>
+          </div>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- LIÊN HỆ CTA -->
+  <section class="py-5 text-center">
+    <div class="container">
+      <h2 class="fw-bold mb-3">Tham gia cùng chúng tôi</h2>
+      <p class="text-muted mb-4">Hãy bắt đầu hành trình tình nguyện của bạn ngay hôm nay.</p>
+      <a th:href="@{/events}" class="btn btn-primary btn-lg me-3">
+        <i class="bi bi-calendar-event me-2"></i>Khám phá sự kiện
+      </a>
+      <a th:href="@{/contact}" class="btn btn-outline-success btn-lg">
+        <i class="bi bi-envelope me-2"></i>Liên hệ chúng tôi
+      </a>
+    </div>
+  </section>
+</main>
+
+<footer th:replace="~{shared/layout :: footer}"></footer>
+<th:block th:replace="~{shared/layout :: scripts}"></th:block>
+</body>
+</html>

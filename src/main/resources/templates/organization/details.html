@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{shared/layout :: head(${org.name})}">
+  <style>
+    .org-header { background: linear-gradient(135deg, #1b5e20, #2e7d32); color: #fff; padding: 48px 0; }
+    .info-card { border: none; box-shadow: 0 2px 12px rgba(0,0,0,.08); border-radius: 12px; }
+    .stat-badge { background: #f1f8e9; color: #2e7d32; border-radius: 8px; padding: 12px 20px; text-align: center; }
+    .focus-tag { background: #e8f5e9; color: #2e7d32; border-radius: 20px; padding: 4px 14px; font-size: .85rem; display: inline-block; margin: 3px; }
+  </style>
+</head>
+<body>
+<nav th:replace="~{shared/layout :: navbar('organizations')}"></nav>
+<div th:replace="~{shared/layout :: flash}"></div>
+
+<main>
+  <!-- HEADER -->
+  <section class="org-header">
+    <div class="container">
+      <div class="d-flex align-items-center gap-4">
+        <img th:if="${org.avatarUrl != null}" th:src="${org.avatarUrl}"
+             class="rounded-circle border border-3 border-white"
+             style="width:90px;height:90px;object-fit:cover" alt="logo"/>
+        <div th:unless="${org.avatarUrl != null}"
+             class="rounded-circle bg-white text-success d-flex align-items-center justify-content-center border border-3 border-white"
+             style="width:90px;height:90px;font-size:2.2rem;font-weight:700;flex-shrink:0"
+             th:text="${org.name.substring(0,1)}">O</div>
+        <div>
+          <h2 class="fw-bold mb-1" th:text="${org.name}"></h2>
+          <span class="badge bg-light text-success fs-6 me-2" th:text="${org.organizationType}"></span>
+          <span th:if="${org.verified}" class="badge bg-success"><i class="bi bi-check-circle me-1"></i>Đã xác minh</span>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <div class="container py-5">
+    <div class="row g-4">
+      <!-- LEFT: Main content -->
+      <div class="col-lg-8">
+        <!-- Stats row -->
+        <div class="row g-3 mb-4">
+          <div class="col-4">
+            <div class="stat-badge">
+              <div class="fw-bold fs-4" th:text="${org.eventsOrganized != null ? org.eventsOrganized : 0}">0</div>
+              <small>Sự kiện</small>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="stat-badge">
+              <div class="fw-bold fs-4" th:text="${org.memberCount != null ? org.memberCount : 0}">0</div>
+              <small>Thành viên</small>
+            </div>
+          </div>
+          <div class="col-4">
+            <div class="stat-badge">
+              <div class="fw-bold fs-4">
+                <span th:if="${org.averageRating != null}" th:text="${#numbers.formatDecimal(org.averageRating,1,1)}">—</span>
+                <span th:unless="${org.averageRating != null}">—</span>
+              </div>
+              <small>Đánh giá</small>
+            </div>
+          </div>
+        </div>
+
+        <!-- About -->
+        <div class="card info-card p-4 mb-4">
+          <h5 class="fw-bold mb-3"><i class="bi bi-info-circle me-2 text-success"></i>Về tổ chức</h5>
+          <p class="text-secondary lh-lg" th:text="${org.description}"></p>
+        </div>
+
+        <!-- Focus areas -->
+        <div th:if="${org.focusAreas != null and !#lists.isEmpty(org.focusAreas)}" class="card info-card p-4 mb-4">
+          <h5 class="fw-bold mb-3"><i class="bi bi-bullseye me-2 text-success"></i>Lĩnh vực hoạt động</h5>
+          <div>
+            <span th:each="area : ${org.focusAreas}" th:text="${area}" class="focus-tag"></span>
+          </div>
+        </div>
+
+        <!-- Achievements -->
+        <div th:if="${org.achievements != null}" class="card info-card p-4 mb-4">
+          <h5 class="fw-bold mb-3"><i class="bi bi-trophy me-2 text-success"></i>Thành tích</h5>
+          <p class="text-secondary lh-lg" th:text="${org.achievements}"></p>
+        </div>
+      </div>
+
+      <!-- RIGHT: Contact info -->
+      <div class="col-lg-4">
+        <div class="card info-card p-4 sticky-top" style="top:80px">
+          <h5 class="fw-bold mb-3">Thông tin liên hệ</h5>
+          <ul class="list-unstyled">
+            <li class="mb-3" th:if="${org.contactEmail != null}">
+              <i class="bi bi-envelope me-2 text-success"></i>
+              <a th:href="'mailto:' + ${org.contactEmail}" class="text-decoration-none" th:text="${org.contactEmail}"></a>
+            </li>
+            <li class="mb-3" th:if="${org.phoneNumber != null}">
+              <i class="bi bi-telephone me-2 text-success"></i>
+              <span th:text="${org.phoneNumber}"></span>
+            </li>
+            <li class="mb-3" th:if="${org.address != null}">
+              <i class="bi bi-geo-alt me-2 text-success"></i>
+              <span th:text="${(org.address != null ? org.address : '') + (org.city != null ? ', ' + org.city : '')}"></span>
+            </li>
+            <li class="mb-3" th:if="${org.website != null}">
+              <i class="bi bi-globe me-2 text-success"></i>
+              <a th:href="${org.website}" target="_blank" class="text-decoration-none" th:text="${org.website}"></a>
+            </li>
+            <li class="mb-3" th:if="${org.foundedDate != null}">
+              <i class="bi bi-calendar me-2 text-success"></i>
+              Thành lập: <span th:text="${#temporals.format(org.foundedDate,'dd/MM/yyyy')}"></span>
+            </li>
+          </ul>
+
+          <!-- Social links -->
+          <div class="d-flex gap-2 mt-3">
+            <a th:if="${org.facebookUrl != null}" th:href="${org.facebookUrl}" target="_blank"
+               class="btn btn-outline-primary btn-sm">
+              <i class="bi bi-facebook me-1"></i>Facebook
+            </a>
+            <a th:if="${org.instagramUrl != null}" th:href="${org.instagramUrl}" target="_blank"
+               class="btn btn-outline-danger btn-sm">
+              <i class="bi bi-instagram me-1"></i>Instagram
+            </a>
+            <a th:if="${org.zaloNumber != null}"
+               th:href="'https://zalo.me/' + ${org.zaloNumber}" target="_blank"
+               class="btn btn-outline-info btn-sm">
+              Zalo
+            </a>
+          </div>
+
+          <hr/>
+          <a th:href="@{/organizations}" class="btn btn-outline-secondary w-100 btn-sm">
+            <i class="bi bi-arrow-left me-1"></i>Danh sách tổ chức
+          </a>
+        </div>
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer th:replace="~{shared/layout :: footer}"></footer>
+<th:block th:replace="~{shared/layout :: scripts}"></th:block>
+</body>
+</html>
