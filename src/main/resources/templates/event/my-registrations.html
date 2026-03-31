@@ -1,57 +1,44 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8"/><title>Đăng ký của tôi</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"/>
-  <style>:root{--primary:#2e7d32}.btn-primary{background:var(--primary);border-color:var(--primary)} footer{background:#1b5e20;color:#fff}</style>
-</head>
+<head th:replace="~{shared/layout :: head('Đăng ký của tôi')}"></head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-  <div class="container">
-    <a class="navbar-brand fw-bold text-success" th:href="@{/}">🌿 Tình Nguyện Xanh</a>
-    <ul class="navbar-nav ms-auto">
-      <li class="nav-item"><a class="nav-link" th:href="@{/events}">Sự kiện</a></li>
-      <li class="nav-item"><a class="nav-link fw-bold text-success" th:href="@{/events/my-registrations}">Đăng ký của tôi</a></li>
-      <li class="nav-item"><a class="nav-link" th:href="@{/events/my-favorites}">Yêu thích</a></li>
-    </ul>
-  </div>
-</nav>
-<div class="container py-5">
-  <h2 class="fw-bold text-success mb-4"><i class="bi bi-calendar-check me-2"></i>Đăng ký của tôi</h2>
-  <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-
-  <div class="card border-0 shadow-sm">
-    <div class="card-body p-0">
-      <table class="table table-hover mb-0">
-        <thead class="table-light">
-          <tr><th>#</th><th>Sự kiện</th><th>Ngày đăng ký</th><th>Địa điểm</th><th>Trạng thái</th></tr>
-        </thead>
-        <tbody>
-          <tr th:each="reg,iter : ${registrations}">
-            <td th:text="${iter.count}"></td>
-            <td>
-              <a th:href="@{/events/{id}(id=${reg.event.id})}" th:text="${reg.event.title}"
-                 class="text-decoration-none fw-semibold"></a>
-            </td>
-            <td th:text="${#temporals.format(reg.registeredDate,'dd/MM/yyyy')}"></td>
-            <td th:text="${reg.event.location}"></td>
-            <td>
-              <span class="badge"
-                    th:classappend="${reg.status == 'Confirmed'} ? 'bg-success' : (${reg.status == 'Rejected'} ? 'bg-danger' : 'bg-warning text-dark')"
-                    th:text="${reg.status}"></span>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+<nav th:replace="~{shared/layout :: navbar('events')}"></nav>
+<div th:replace="~{shared/layout :: flash}"></div>
+<main>
+  <div class="container py-5">
+    <h2 class="fw-bold text-success mb-4"><i class="bi bi-calendar-check me-2"></i>Đăng ký của tôi</h2>
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0">
+          <thead class="table-light">
+            <tr><th>#</th><th>Sự kiện</th><th>Ngày đăng ký</th><th>Địa điểm</th><th>Trạng thái</th></tr>
+          </thead>
+          <tbody>
+            <tr th:each="reg,iter : ${registrations}">
+              <td th:text="${iter.count}"></td>
+              <td>
+                <a th:href="@{/events/{id}(id=${reg.event.id})}" th:text="${reg.event.title}"
+                   class="text-decoration-none fw-semibold"></a>
+              </td>
+              <td th:text="${#temporals.format(reg.registeredDate,'dd/MM/yyyy')}"></td>
+              <td th:text="${reg.event.location}"></td>
+              <td>
+                <span class="badge"
+                      th:classappend="${reg.status == 'Confirmed'} ? 'bg-success' : (${reg.status == 'Rejected'} ? 'bg-danger' : 'bg-warning text-dark')"
+                      th:text="${reg.status}"></span>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
     </div>
+    <p th:if="${registrations == null or #lists.isEmpty(registrations)}" class="text-center text-muted py-4">
+      Bạn chưa đăng ký sự kiện nào.
+      <a th:href="@{/events}" class="text-success">Khám phá sự kiện ngay!</a>
+    </p>
   </div>
-  <p th:if="${registrations == null or #lists.isEmpty(registrations)}" class="text-center text-muted py-4">
-    Bạn chưa đăng ký sự kiện nào.
-    <a th:href="@{/events}" class="text-success">Khám phá sự kiện ngay!</a>
-  </p>
-</div>
-<footer class="py-3 mt-5"><div class="container text-center"><p class="mb-0">🌿 Tình Nguyện Xanh &copy; 2025</p></div></footer>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</main>
+<footer th:replace="~{shared/layout :: footer}"></footer>
+<th:block th:replace="~{shared/layout :: scripts}"></th:block>
 </body>
 </html>

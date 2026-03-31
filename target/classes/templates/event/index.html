@@ -1,108 +1,72 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head>
-  <meta charset="UTF-8"/><title>Sự kiện - Tình Nguyện Xanh</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"/>
+<head th:replace="~{shared/layout :: head('Sự kiện')}">
   <style>
-    :root{--primary:#2e7d32}
-    .navbar-brand{color:var(--primary)!important;font-weight:700}
-    .btn-primary{background:var(--primary);border-color:var(--primary)}
-    .event-card{transition:.3s;border:none;box-shadow:0 2px 8px rgba(0,0,0,.1)}
-    .event-card:hover{transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,.15)}
-    footer{background:#1b5e20;color:#fff}
+    .event-card { transition: .3s; border: none; box-shadow: 0 2px 8px rgba(0,0,0,.1); }
+    .event-card:hover { transform: translateY(-4px); box-shadow: 0 8px 24px rgba(0,0,0,.15); }
   </style>
 </head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm sticky-top">
-  <div class="container">
-    <a class="navbar-brand" th:href="@{/}">🌿 Tình Nguyện Xanh</a>
-    <div class="collapse navbar-collapse">
-      <ul class="navbar-nav me-auto">
-        <li class="nav-item"><a class="nav-link" th:href="@{/}">Trang chủ</a></li>
-        <li class="nav-item"><a class="nav-link fw-bold text-success" th:href="@{/events}">Sự kiện</a></li>
-        <li class="nav-item"><a class="nav-link" th:href="@{/organizations}">Tổ chức</a></li>
-        <li class="nav-item"><a class="nav-link" th:href="@{/donate}">Quyên góp</a></li>
-      </ul>
-      <form th:action="@{/search}" method="get" class="d-flex me-3">
+
+<nav th:replace="~{shared/layout :: navbar('events')}"></nav>
+<div th:replace="~{shared/layout :: flash}"></div>
+
+<main>
+  <div class="container py-5">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+      <h2 class="fw-bold text-success"><i class="bi bi-calendar-event me-2"></i>Tất cả sự kiện</h2>
+      <form th:action="@{/search}" method="get" class="d-flex">
         <input name="keyword" class="form-control me-2" placeholder="Tìm kiếm sự kiện..."/>
         <button class="btn btn-outline-success" type="submit"><i class="bi bi-search"></i></button>
       </form>
-      <div sec:authorize="!isAuthenticated()">
-        <a th:href="@{/auth/login}" class="btn btn-primary btn-sm">Đăng nhập</a>
-      </div>
-      <div sec:authorize="isAuthenticated()" class="dropdown">
-        <button class="btn btn-outline-secondary btn-sm dropdown-toggle" data-bs-toggle="dropdown">
-          <i class="bi bi-person-circle"></i> <span sec:authentication="name">User</span>
-        </button>
-        <ul class="dropdown-menu dropdown-menu-end">
-          <li><a class="dropdown-item" th:href="@{/events/my-registrations}">Đăng ký của tôi</a></li>
-          <li><a class="dropdown-item" th:href="@{/events/my-favorites}">Yêu thích</a></li>
-          <li><hr class="dropdown-divider"/></li>
-          <li>
-            <form th:action="@{/auth/logout}" method="post" class="px-3">
-              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-              <button class="dropdown-item text-danger p-0" type="submit">Đăng xuất</button>
-            </form>
-          </li>
-        </ul>
-      </div>
     </div>
-  </div>
-</nav>
 
-<div class="container py-5">
-  <h2 class="fw-bold text-success mb-4"><i class="bi bi-calendar-event me-2"></i>Tất cả sự kiện</h2>
-
-  <div th:if="${success}" class="alert alert-success" th:text="${success}"></div>
-
-  <div class="row g-4">
-    <div th:each="event : ${events}" class="col-md-4">
-      <div class="card event-card h-100">
-        <img th:if="${event.images != null}" th:src="${event.images}"
-             class="card-img-top" style="height:200px;object-fit:cover" alt="event"/>
-        <img th:unless="${event.images != null}"
-             src="https://via.placeholder.com/400x200?text=No+Image"
-             class="card-img-top" style="height:200px;object-fit:cover" alt="event"/>
-        <div class="card-body d-flex flex-column">
-          <span class="badge bg-success mb-2 w-auto" style="width:fit-content"
-                th:text="${event.categoryName}">Danh mục</span>
-          <h5 class="card-title" th:text="${event.title}">Tiêu đề</h5>
-          <p class="text-muted small flex-grow-1"
-             th:text="${#strings.abbreviate(event.description, 100)}">Mô tả</p>
-          <div class="mt-auto">
-            <p class="text-muted small mb-1">
-              <i class="bi bi-geo-alt me-1"></i><span th:text="${event.location}"></span>
-            </p>
-            <p class="text-muted small mb-2">
-              <i class="bi bi-calendar me-1"></i>
-              <span th:text="${#temporals.format(event.startTime,'dd/MM/yyyy HH:mm')}"></span>
-            </p>
-            <div class="d-flex justify-content-between align-items-center">
-              <div>
-                <span class="badge bg-secondary me-1">
+    <div class="row g-4">
+      <div th:each="event : ${events}" class="col-md-4">
+        <div class="card event-card h-100">
+          <img th:if="${event.images != null}" th:src="${event.images}"
+               class="card-img-top" style="height:200px;object-fit:cover" alt="event"/>
+          <img th:unless="${event.images != null}"
+               src="https://via.placeholder.com/400x200?text=No+Image"
+               class="card-img-top" style="height:200px;object-fit:cover" alt="event"/>
+          <div class="card-body d-flex flex-column">
+            <span class="badge bg-success mb-2" style="width:fit-content"
+                  th:text="${event.categoryName}">Danh mục</span>
+            <h5 class="card-title" th:text="${event.title}">Tiêu đề</h5>
+            <p class="text-muted small flex-grow-1"
+               th:text="${#strings.abbreviate(event.description, 100)}">Mô tả</p>
+            <div class="mt-auto">
+              <p class="text-muted small mb-1">
+                <i class="bi bi-geo-alt me-1"></i><span th:text="${event.location}"></span>
+              </p>
+              <p class="text-muted small mb-2">
+                <i class="bi bi-calendar me-1"></i>
+                <span th:text="${#temporals.format(event.startTime,'dd/MM/yyyy HH:mm')}"></span>
+              </p>
+              <div class="d-flex justify-content-between align-items-center">
+                <span class="badge bg-secondary">
                   <i class="bi bi-people me-1"></i>
                   <span th:text="${event.registeredCount + '/' + event.maxVolunteers}"></span>
                 </span>
+                <a th:href="@{/events/{id}(id=${event.id})}" class="btn btn-primary btn-sm">
+                  Chi tiết <i class="bi bi-arrow-right"></i>
+                </a>
               </div>
-              <a th:href="@{/events/{id}(id=${event.id})}" class="btn btn-primary btn-sm">
-                Chi tiết <i class="bi bi-arrow-right"></i>
-              </a>
             </div>
           </div>
         </div>
       </div>
     </div>
-  </div>
 
-  <div th:if="${#lists.isEmpty(events)}" class="text-center py-5 text-muted">
-    <i class="bi bi-calendar-x display-4"></i>
-    <p class="mt-3">Chưa có sự kiện nào được duyệt</p>
+    <div th:if="${#lists.isEmpty(events)}" class="text-center py-5 text-muted">
+      <i class="bi bi-calendar-x display-4"></i>
+      <p class="mt-3">Chưa có sự kiện nào được duyệt</p>
+    </div>
   </div>
-</div>
+</main>
 
-<footer class="py-4"><div class="container text-center"><p>🌿 Tình Nguyện Xanh &copy; 2025</p></div></footer>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<footer th:replace="~{shared/layout :: footer}"></footer>
+<th:block th:replace="~{shared/layout :: scripts}"></th:block>
 </body>
 </html>
