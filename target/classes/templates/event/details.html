@@ -1,189 +1,629 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head th:replace="~{shared/layout :: head(${event.title})}">
-  <style>
-    .hero-img { width: 100%; max-height: 420px; object-fit: cover; border-radius: 16px; display: block; }
-    .info-card { border: none; box-shadow: 0 2px 12px rgba(0,0,0,.08); border-radius: 12px; }
-    .btn-register-muted { opacity: .45; filter: grayscale(30%); cursor: not-allowed; }
-  </style>
-</head>
-<body>
 
+<head th:replace="~{shared/layout :: head(${event.title})}">
+  <style>/* replaced by fragment */</style>
+</head>
+
+<body>
 <nav th:replace="~{shared/layout :: navbar('events')}"></nav>
 <div th:replace="~{shared/layout :: flash}"></div>
 
+<style>
+  :root {
+    --green: #2e7d32;
+    --green-light: #f0fdf4;
+    --green-border: #bbf7d0;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e5e7eb;
+    --radius: 16px;
+    --shadow-sm: 0 2px 8px rgba(0,0,0,.06);
+    --shadow-md: 0 4px 20px rgba(0,0,0,.09);
+  }
+
+  .detail-wrap { padding: 2.5rem 0 4rem; background: #f8fafb; min-height: 100vh; }
+
+  /* Card trắng chung */
+  .card-white {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: var(--radius);
+    box-shadow: var(--shadow-sm);
+    margin-bottom: 1.5rem;
+  }
+  .card-body-p { padding: 1.75rem; }
+
+  /* Hero: ảnh trái + info phải */
+  .hero-card { overflow: hidden; }
+  .hero-img {
+    width: 100%; height: 100%;
+    min-height: 280px; max-height: 340px;
+    object-fit: cover; display: block;
+  }
+  .hero-body {
+    padding: 1.75rem;
+    display: flex; flex-direction: column; justify-content: center;
+  }
+
+  /* Badges */
+  .badge-cat {
+    display: inline-flex; align-items: center; gap: .35rem;
+    background: var(--green-light); color: var(--green);
+    border: 1px solid var(--green-border);
+    border-radius: 20px; font-size: .8rem; font-weight: 600;
+    padding: .25rem .75rem;
+  }
+  .badge-status {
+    display: inline-flex; align-items: center; gap: .3rem;
+    border-radius: 20px; font-size: .8rem; font-weight: 600;
+    padding: .25rem .7rem; margin-left: .4rem;
+  }
+  .badge-approved { background: #dcfce7; color: var(--green); border: 1px solid var(--green-border); }
+  .badge-pending  { background: #fef9c3; color: #92400e;      border: 1px solid #fde68a; }
+  .badge-other    { background: #f1f5f9; color: #475569;      border: 1px solid var(--border); }
+  .badge-expired  { background: #f1f5f9; color: #6b7280;      border: 1px solid #d1d5db; }
+
+  .badge-verified {
+    display: inline-flex; align-items: center; gap: .35rem;
+    background: var(--green-light); color: var(--green);
+    border: 1px solid var(--green-border);
+    border-radius: 20px; font-size: .82rem; font-weight: 600;
+    padding: .2rem .7rem; margin-bottom: .9rem;
+  }
+
+  .event-title { font-size: 1.6rem; font-weight: 800; color: var(--green); line-height: 1.3; margin: .5rem 0 .4rem; }
+  .event-org   { font-size: .9rem; color: var(--muted); display: flex; align-items: center; gap: .4rem; margin-bottom: 1.1rem; }
+
+  /* Stats 4 ô */
+  .stats-row { display: grid; grid-template-columns: repeat(4,1fr); gap: .65rem; margin-bottom: 1.1rem; }
+  .stat-box {
+    background: var(--green-light); border: 1px solid var(--green-border);
+    border-radius: 12px; padding: .7rem .4rem; text-align: center;
+  }
+  .stat-box i    { font-size: 1.2rem; color: var(--green); display: block; margin-bottom: .15rem; }
+  .stat-value    { font-weight: 700; font-size: .88rem; color: var(--text); }
+  .stat-label    { font-size: .72rem; color: var(--muted); margin-top: .1rem; }
+
+  /* Section title */
+  .section-title {
+    font-size: 1rem; font-weight: 700; color: var(--text);
+    border-left: 4px solid var(--green); padding-left: .9rem;
+    margin-bottom: 1.1rem; display: flex; align-items: center; gap: .6rem;
+  }
+  .count-badge {
+    background: #e2e8f0; color: #475569;
+    font-size: .75rem; border-radius: 20px; padding: .1rem .5rem; font-weight: 600;
+  }
+
+  /* Map */
+  .map-frame { width:100%; height:300px; border-radius:12px; border:0; display:block; }
+
+  /* Comment */
+  .comment-item { border-bottom: 1px solid #f1f5f9; padding: 1rem 0; }
+  .comment-item:last-child { border-bottom: none; }
+  .comment-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--green); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 1rem; flex-shrink: 0;
+  }
+  .comment-form-wrap { position: relative; }
+  .comment-textarea {
+    width: 100%; border: 1px solid var(--border); border-radius: 12px;
+    padding: .9rem 7rem .9rem 1rem; resize: none; font-size: .92rem;
+    background: #f8fafb; transition: border .2s; line-height: 1.6;
+  }
+  .comment-textarea:focus { outline: none; border-color: var(--green); background: #fff; }
+  .btn-send {
+    position: absolute; right: .6rem; bottom: .6rem;
+    background: var(--green); color: #fff; border: none;
+    border-radius: 20px; padding: .38rem 1rem; font-size: .83rem;
+    font-weight: 600; display: flex; align-items: center; gap: .3rem;
+    cursor: pointer; transition: background .2s;
+  }
+  .btn-send:hover { background: #1b5e20; }
+
+  /* Sidebar */
+  .sidebar-card {
+    background: #fff; border: 1px solid var(--border);
+    border-radius: var(--radius); padding: 1.5rem;
+    box-shadow: var(--shadow-md); position: sticky; top: 5rem;
+  }
+  .sidebar-label {
+    font-size: .73rem; font-weight: 700; text-transform: uppercase;
+    letter-spacing: .05em; color: var(--muted); margin-bottom: .7rem;
+    display: flex; align-items: center; gap: .4rem;
+  }
+
+  /* Nút đăng ký */
+  .btn-reg {
+    width: 100%; padding: .85rem; border-radius: 10px; border: none;
+    background: var(--green); color: #fff; font-weight: 700; font-size: .95rem;
+    display: flex; align-items: center; justify-content: center; gap: .5rem;
+    cursor: pointer; transition: background .2s, transform .15s; text-decoration: none;
+    margin-bottom: .7rem;
+  }
+  .btn-reg:hover { background: #1b5e20; color: #fff; transform: translateY(-1px); }
+  .btn-reg:disabled, .btn-reg.is-disabled {
+    background: #d1d5db; color: #9ca3af; cursor: not-allowed;
+    transform: none; pointer-events: none;
+  }
+  /* Nút sự kiện đã kết thúc */
+  .btn-reg.expired {
+    background: #f1f5f9; color: #9ca3af;
+    border: 1px solid #e5e7eb; cursor: not-allowed;
+    transform: none; pointer-events: none;
+  }
+
+  .btn-side {
+    width: 100%; padding: .68rem; border-radius: 10px; font-weight: 600; font-size: .88rem;
+    display: flex; align-items: center; justify-content: center; gap: .45rem;
+    cursor: pointer; transition: all .2s; text-decoration: none; margin-bottom: .6rem;
+    border: 1px solid; background: #fff;
+  }
+  .btn-fav        { color: var(--muted);  border-color: var(--border); }
+  .btn-fav:hover, .btn-fav.active { color: #dc2626; border-color: #fca5a5; background: #fef2f2; }
+  .btn-report     { color: #dc2626; border-color: #fca5a5; }
+  .btn-report:hover { background: #fef2f2; }
+
+  /* Banner sự kiện đã kết thúc */
+  .expired-banner {
+    background: #f8fafc; border: 1px solid #e2e8f0;
+    border-radius: 10px; padding: .75rem 1rem;
+    font-size: .87rem; color: #64748b; text-align: center;
+    margin-bottom: .7rem; display: flex; align-items: center;
+    justify-content: center; gap: .45rem;
+  }
+
+  /* Related */
+  .related-item {
+    display: flex; gap: .65rem; align-items: flex-start;
+    text-decoration: none; color: var(--text);
+    padding: .6rem; border-radius: 10px; border: 1px solid var(--border);
+    transition: background .15s; margin-bottom: .55rem;
+  }
+  .related-item:hover { background: var(--green-light); }
+  .related-thumb { width: 54px; height: 54px; object-fit: cover; border-radius: 8px; flex-shrink: 0; }
+  .related-title {
+    font-size: .84rem; font-weight: 600; line-height: 1.35;
+    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  }
+  .related-date  { font-size: .74rem; color: var(--muted); margin-top: .2rem; }
+
+  @media (max-width: 767px) {
+    .stats-row  { grid-template-columns: repeat(2,1fr); }
+    .hero-img   { min-height: 200px; max-height: 220px; }
+    .hero-body  { padding: 1.2rem; }
+  }
+</style>
+
 <main>
-  <div class="container py-5">
-    <div class="row g-4">
-      <!-- LEFT: Main content -->
-      <div class="col-lg-8">
-        <img th:if="${event.images != null}" th:src="${event.images}" class="hero-img mb-4" alt="event"/>
-        <img th:unless="${event.images != null}"
-             src="https://via.placeholder.com/800x400?text=No+Image" class="hero-img mb-4" alt="event"/>
+  <div class="detail-wrap">
+    <div class="container">
 
-        <div class="d-flex gap-2 mb-3">
-          <span class="badge bg-success fs-6" th:text="${event.categoryName}"></span>
-          <span class="badge fs-6"
-                th:classappend="${event.status == 'approved'} ? 'bg-success' : 'bg-secondary'"
-                th:text="${event.status}"></span>
-        </div>
+      <!-- Breadcrumb -->
+      <nav aria-label="breadcrumb" class="mb-3">
+        <ol class="breadcrumb" style="font-size:.87rem;">
+          <li class="breadcrumb-item"><a th:href="@{/}" class="text-decoration-none text-muted">Trang chủ</a></li>
+          <li class="breadcrumb-item"><a th:href="@{/events}" class="text-decoration-none text-muted">Sự kiện</a></li>
+          <li class="breadcrumb-item active" th:text="${event.title}">Chi tiết</li>
+        </ol>
+      </nav>
 
-        <h1 class="fw-bold" th:text="${event.title}">Tên sự kiện</h1>
-        <p class="text-muted">
-          <i class="bi bi-building me-1"></i>
-          <span th:text="${event.organizationName}">Tổ chức</span>
-        </p>
+      <div class="row g-4">
 
-        <hr/>
-        <h5 class="fw-bold">Mô tả sự kiện</h5>
-        <p th:text="${event.description}" class="text-secondary lh-lg"></p>
+        <!-- ═══ CỘT TRÁI ═══ -->
+        <div class="col-lg-8">
 
-        <!-- COMMENTS -->
-        <hr/>
-        <h5 class="fw-bold"><i class="bi bi-chat-dots me-2"></i>Bình luận</h5>
+          <!-- Hero card -->
+          <div class="card-white hero-card">
+            <div class="row g-0">
 
-        <div sec:authorize="isAuthenticated()" class="mb-4">
-          <form th:action="@{/events/{id}/comment(id=${event.id})}" method="post">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-            <div class="input-group">
-              <input type="text" name="content" class="form-control" placeholder="Nhập bình luận..."/>
-              <button class="btn btn-primary" type="submit"><i class="bi bi-send"></i></button>
-            </div>
-          </form>
-        </div>
-
-        <div th:each="comment : ${comments}" class="d-flex mb-3">
-          <div class="flex-shrink-0">
-            <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center"
-                 style="width:40px;height:40px;font-weight:700"
-                 th:text="${comment.user.fullName.substring(0,1)}">A</div>
-          </div>
-          <div class="ms-3 flex-grow-1">
-            <div class="bg-light rounded p-3">
-              <p class="fw-bold mb-1" th:text="${comment.user.fullName}">Tên</p>
-              <p class="mb-0" th:text="${comment.content}">Nội dung</p>
-            </div>
-            <small class="text-muted" th:text="${#temporals.format(comment.createdAt,'dd/MM/yyyy HH:mm')}"></small>
-          </div>
-        </div>
-
-        <p th:if="${#lists.isEmpty(comments)}" class="text-muted">Chưa có bình luận nào.</p>
-      </div>
-
-      <!-- RIGHT: Info card -->
-      <div class="col-lg-4">
-        <div class="card info-card p-4 sticky-top" style="top:80px">
-          <h5 class="fw-bold mb-3">Thông tin sự kiện</h5>
-
-          <ul class="list-unstyled">
-            <li class="mb-2">
-              <i class="bi bi-calendar-event me-2 text-success"></i>
-              <strong>Bắt đầu:</strong>
-              <span th:text="${#temporals.format(event.startTime,'dd/MM/yyyy HH:mm')}"></span>
-            </li>
-            <li class="mb-2">
-              <i class="bi bi-calendar-x me-2 text-success"></i>
-              <strong>Kết thúc:</strong>
-              <span th:text="${#temporals.format(event.endTime,'dd/MM/yyyy HH:mm')}"></span>
-            </li>
-            <li class="mb-2">
-              <i class="bi bi-geo-alt me-2 text-success"></i>
-              <strong>Địa điểm:</strong>
-              <span th:text="${event.location}"></span>
-            </li>
-            <li class="mb-2">
-              <i class="bi bi-people me-2 text-success"></i>
-              <strong>Tình nguyện viên:</strong>
-              <span th:text="${event.registeredCount + '/' + event.maxVolunteers}"></span>
-            </li>
-          </ul>
-
-          <div class="progress mb-3" style="height:8px">
-            <div class="progress-bar bg-success" role="progressbar"
-                 th:style="'width:' + (${event.maxVolunteers > 0 ? event.registeredCount * 100 / event.maxVolunteers : 0}) + '%'"></div>
-          </div>
-
-          <div sec:authorize="isAuthenticated()">
-            <div th:if="${alreadyRegistered}" class="mb-3">
-              <p class="small text-success mb-2 text-center"><i class="bi bi-check-circle me-1"></i>Bạn đã đăng ký sự kiện này</p>
-              <button type="button" class="btn btn-primary w-100 mb-2 btn-register-muted" disabled>
-                <i class="bi bi-pencil-square me-2"></i>Đăng ký tham gia
-              </button>
-            </div>
-            <div th:unless="${alreadyRegistered}">
-              <button type="button" class="btn btn-primary w-100 mb-2" data-bs-toggle="modal" data-bs-target="#registerModal">
-                <i class="bi bi-pencil-square me-2"></i>Đăng ký tham gia
-              </button>
-            </div>
-
-            <form th:action="@{/events/{id}/favorite(id=${event.id})}" method="post">
-              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-              <button type="submit" class="btn w-100"
-                      th:classappend="${isFavorited} ? 'btn-danger' : 'btn-outline-danger'">
-                <i th:classappend="${isFavorited} ? 'bi bi-heart-fill' : 'bi bi-heart'" class="me-2"></i>
-                <span th:text="${isFavorited} ? 'Bỏ yêu thích' : 'Thêm yêu thích'"></span>
-              </button>
-            </form>
-
-            <form th:action="@{/events/{id}/report(id=${event.id})}" method="post" class="mt-2">
-              <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-              <div class="input-group">
-                <input type="text" name="reason" class="form-control form-control-sm"
-                       maxlength="500" placeholder="Lý do báo cáo sự kiện"/>
-                <button type="submit" class="btn btn-outline-warning btn-sm">Báo cáo</button>
+              <!-- Ảnh bên trái -->
+              <div class="col-md-5">
+                <img th:src="${event.images != null and !#strings.isEmpty(event.images)
+                           ? event.images
+                           : 'https://placehold.co/600x400/e8f5e9/2e7d32?text=No+Image'}"
+                     class="hero-img"
+                     alt="Ảnh sự kiện"
+                     onerror="this.src='https://placehold.co/600x400/e8f5e9/2e7d32?text=No+Image'"/>
               </div>
-            </form>
+
+              <!-- Info bên phải -->
+              <div class="col-md-7">
+                <div class="hero-body">
+
+                  <!-- Badge danh mục + trạng thái -->
+                  <div style="margin-bottom:.65rem;">
+                <span class="badge-cat">
+                  <i class="bi bi-tag-fill"></i>
+                  <span th:text="${event.categoryName}">Danh mục</span>
+                </span>
+                    <span class="badge-status"
+                          th:classappend="${isExpired} ? 'badge-expired'
+                                    : (${event.status == 'approved'} ? 'badge-approved'
+                                    : (${event.status == 'pending'} ? 'badge-pending' : 'badge-other'))"
+                          th:text="${isExpired} ? 'Đã kết thúc' : ${event.status}">approved</span>
+                  </div>
+
+                  <!-- Nhãn Đã duyệt -->
+                  <div th:if="${event.status == 'approved' and !isExpired}" class="badge-verified">
+                    <i class="bi bi-check-circle-fill"></i> Đã duyệt
+                  </div>
+
+                  <h1 class="event-title" th:text="${event.title}">Tên sự kiện</h1>
+
+                  <div class="event-org">
+                    <i class="bi bi-people-fill text-success"></i>
+                    Tổ chức bởi: <strong th:text="${event.organizationName}">Tên tổ chức</strong>
+                  </div>
+
+                  <!-- 4 stat boxes -->
+                  <div class="stats-row">
+                    <div class="stat-box">
+                      <i class="bi bi-calendar-event"></i>
+                      <div class="stat-value" th:text="${#temporals.format(event.startTime,'dd/MM/yyyy')}">--</div>
+                      <div class="stat-label">Ngày bắt đầu</div>
+                    </div>
+                    <div class="stat-box">
+                      <i class="bi bi-clock"></i>
+                      <div class="stat-value" th:text="${#temporals.format(event.startTime,'HH:mm')}">--</div>
+                      <div class="stat-label">Thời gian</div>
+                    </div>
+                    <div class="stat-box">
+                      <i class="bi bi-geo-alt"></i>
+                      <div class="stat-value text-truncate"
+                           th:text="${event.location}" th:title="${event.location}">--</div>
+                      <div class="stat-label">Địa điểm</div>
+                    </div>
+                    <div class="stat-box">
+                      <i class="bi bi-person-lines-fill"></i>
+                      <div class="stat-value" th:text="${event.maxVolunteers}">0</div>
+                      <div class="stat-label">Tình nguyện viên</div>
+                    </div>
+                  </div>
+
+                  <!-- Progress bar -->
+                  <div>
+                    <div class="d-flex justify-content-between mb-1" style="font-size:.8rem; color:var(--muted);">
+                  <span>Tiến độ tuyển tình nguyện viên
+                    <strong th:text="${(event.maxVolunteers > 0 ? #numbers.formatInteger(event.registeredCount * 100 / event.maxVolunteers, 1, 'DEFAULT') : '0') + '%'}">0%</strong>
+                  </span>
+                      <span>
+                    <span th:text="${event.registeredCount}">0</span>/<span th:text="${event.maxVolunteers}">0</span> đã đăng ký
+                  </span>
+                    </div>
+                    <div class="progress" style="height:7px; border-radius:8px;">
+                      <div class="progress-bar bg-success" role="progressbar"
+                           th:style="'width:' + (${event.maxVolunteers > 0 ? event.registeredCount * 100 / event.maxVolunteers : 0}) + '%'"></div>
+                    </div>
+                  </div>
+
+                </div>
+              </div>
+            </div>
           </div>
 
-          <div sec:authorize="!isAuthenticated()" class="text-center">
-            <a th:href="@{/auth/login}" class="btn btn-primary w-100">
-              <i class="bi bi-person me-2"></i>Đăng nhập để đăng ký
-            </a>
+          <!-- Mô tả chi tiết -->
+          <div class="card-white">
+            <div class="card-body-p">
+              <h5 class="section-title"><i class="bi bi-file-text"></i>Mô tả chi tiết</h5>
+              <div class="text-secondary lh-lg" style="font-size:.95rem;" th:utext="${event.description}">
+                Nội dung mô tả.
+              </div>
+            </div>
           </div>
-        </div>
-      </div>
-    </div>
-  </div>
 
-  <!-- Register Modal -->
-  <div class="modal fade" id="registerModal" tabindex="-1">
-    <div class="modal-dialog">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title fw-bold">Đăng ký tham gia sự kiện</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
-        </div>
-        <form th:action="@{/events/{id}/register(id=${event.id})}" method="post">
-          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-          <div class="modal-body">
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Họ và tên</label>
-              <input type="text" name="fullName" class="form-control"
-                     th:value="${volunteerFullName}" required/>
-            </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Số điện thoại</label>
-              <input type="text" name="phone" class="form-control"
-                     th:value="${volunteerPhone}" required/>
-            </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Lý do tham gia</label>
-              <textarea name="reason" class="form-control" rows="3"
-                        placeholder="Tại sao bạn muốn tham gia?" required></textarea>
+          <!-- Bản đồ -->
+          <div class="card-white"
+               th:if="${event.locationCoords != null and !#strings.isEmpty(event.locationCoords)}">
+            <div class="card-body-p">
+              <h5 class="section-title"><i class="bi bi-map"></i>Bản đồ địa điểm</h5>
+              <iframe th:src="${'https://maps.google.com/maps?q=' + event.locationCoords + '&hl=vi&z=15&output=embed'}"
+                      class="map-frame" allowfullscreen="" loading="lazy"></iframe>
+              <p class="mt-2 mb-0 small text-muted">
+                <i class="bi bi-geo-alt-fill text-success me-1"></i>
+                <span th:text="${event.location}"></span>
+              </p>
             </div>
           </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Hủy</button>
-            <button type="submit" class="btn btn-primary">Xác nhận đăng ký</button>
+
+          <!-- Bình luận -->
+          <div class="card-white">
+            <div class="card-body-p">
+              <h5 class="section-title">
+                <i class="bi bi-chat-dots"></i>Bình luận &amp; Hỏi đáp
+                <span class="count-badge" th:text="${#lists.size(comments)}">0</span>
+              </h5>
+
+              <!-- Form (đã đăng nhập) -->
+              <div sec:authorize="isAuthenticated()" class="mb-4">
+                <form th:action="@{/events/{id}/comment(id=${event.id})}" method="post">
+                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                  <div class="comment-form-wrap">
+                <textarea name="content" class="comment-textarea" rows="3"
+                          placeholder="Viết bình luận của bạn..." required></textarea>
+                    <button type="submit" class="btn-send">
+                      <i class="bi bi-send-fill"></i>Gửi
+                    </button>
+                  </div>
+                </form>
+              </div>
+
+              <!-- Chưa đăng nhập -->
+              <div sec:authorize="!isAuthenticated()"
+                   class="alert border bg-light text-center py-2 mb-4" style="border-radius:12px;">
+                <a th:href="@{/auth/login}" class="fw-bold" style="color:var(--green);">Đăng nhập</a>
+                để tham gia thảo luận.
+              </div>
+
+              <!-- Danh sách bình luận -->
+              <div th:each="comment : ${comments}" class="comment-item d-flex gap-3">
+                <div class="comment-avatar">
+              <span th:text="${comment.user.fullName != null and !#strings.isEmpty(comment.user.fullName)
+                               ? #strings.toUpperCase(#strings.substring(comment.user.fullName, 0, 1))
+                               : '?'}">A</span>
+                </div>
+                <div class="flex-grow-1">
+                  <div style="background:#f8fafb; border:1px solid var(--border); border-radius:12px; padding:.7rem 1rem;">
+                    <p class="fw-bold mb-1 small" th:text="${comment.user.fullName}">Tên</p>
+                    <p class="mb-0" style="font-size:.92rem;" th:text="${comment.content}">Nội dung</p>
+                  </div>
+                  <small class="text-muted"
+                         th:text="${#temporals.format(comment.createdAt,'dd/MM/yyyy HH:mm')}"></small>
+                </div>
+              </div>
+
+              <p th:if="${#lists.isEmpty(comments)}" class="text-center text-muted py-3 mb-0">
+                <i class="bi bi-chat-square-text me-1"></i>Chưa có bình luận. Hãy là người đầu tiên!
+              </p>
+            </div>
           </div>
-        </form>
-      </div>
-    </div>
-  </div>
+
+        </div><!-- /col-lg-8 -->
+
+        <!-- ═══ SIDEBAR PHẢI ═══ -->
+        <div class="col-lg-4">
+          <div class="sidebar-card">
+
+            <div class="sidebar-label"><i class="bi bi-box-arrow-in-right"></i> Tham gia hoạt động</div>
+
+            <!-- ── SỰ KIỆN ĐÃ KẾT THÚC ── -->
+            <div th:if="${isExpired}">
+              <div class="expired-banner">
+                <i class="bi bi-clock-history"></i>
+                Sự kiện này đã kết thúc vào
+                <strong th:text="${#temporals.format(event.endTime,'dd/MM/yyyy')}"></strong>
+              </div>
+              <button class="btn-reg expired" disabled>
+                <i class="bi bi-calendar-x"></i> Không còn nhận đăng ký
+              </button>
+            </div>
+
+            <!-- ── SỰ KIỆN CÒN HIỆU LỰC ── -->
+            <div th:unless="${isExpired}">
+
+              <!-- Đã đăng nhập -->
+              <div sec:authorize="isAuthenticated()">
+                <!-- Đã đăng ký -->
+                <div th:if="${alreadyRegistered}">
+                  <div class="alert alert-success py-2 small text-center mb-2" style="border-radius:10px;">
+                    <i class="bi bi-check-circle-fill me-1"></i>Bạn đã đăng ký sự kiện này
+                  </div>
+                  <button class="btn-reg is-disabled" disabled>
+                    <i class="bi bi-check-lg"></i> Đã đăng ký
+                  </button>
+                </div>
+                <!-- Chưa đăng ký -->
+                <div th:unless="${alreadyRegistered}">
+                  <button type="button" class="btn-reg"
+                          data-bs-toggle="modal" data-bs-target="#registerModal">
+                    <i class="bi bi-pencil-square"></i> Đăng ký tham gia ngay
+                  </button>
+                </div>
+              </div>
+
+              <!-- Chưa đăng nhập -->
+              <div sec:authorize="!isAuthenticated()">
+                <a th:href="@{/auth/login}" class="btn-reg">
+                  <i class="bi bi-person"></i> Đăng nhập để đăng ký
+                </a>
+              </div>
+
+            </div>
+            <!-- /end kiểm tra expired -->
+
+            <!-- Yêu thích + Báo cáo — luôn hiển thị khi đã đăng nhập -->
+            <div sec:authorize="isAuthenticated()">
+              <form th:action="@{/events/{id}/favorite(id=${event.id})}" method="post">
+                <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                <button type="submit" class="btn-side btn-fav"
+                        th:classappend="${isFavorited} ? 'active' : ''">
+                  <i th:class="${isFavorited} ? 'bi bi-heart-fill' : 'bi bi-heart'"></i>
+                  <span th:text="${isFavorited} ? 'Bỏ yêu thích' : 'Thêm yêu thích'">Yêu thích</span>
+                </button>
+              </form>
+              <button type="button" class="btn-side btn-report"
+                      data-bs-toggle="modal" data-bs-target="#reportModal">
+                <i class="bi bi-flag-fill"></i> Báo cáo vi phạm
+              </button>
+            </div>
+
+            <!-- Thông tin sự kiện -->
+            <hr class="my-3"/>
+            <p class="sidebar-label" style="margin-bottom:.65rem;">
+              <i class="bi bi-info-circle"></i> Thông tin sự kiện
+            </p>
+            <ul class="list-unstyled mb-0" style="font-size:.87rem;">
+              <li class="mb-2">
+                <i class="bi bi-calendar-event me-2 text-success"></i>
+                <strong>Bắt đầu:</strong>
+                <span th:text="${#temporals.format(event.startTime,'dd/MM/yyyy HH:mm')}"></span>
+              </li>
+              <li class="mb-2">
+                <i class="bi bi-calendar-x me-2 text-success"></i>
+                <strong>Kết thúc:</strong>
+                <span th:text="${#temporals.format(event.endTime,'dd/MM/yyyy HH:mm')}"></span>
+              </li>
+              <li class="mb-2">
+                <i class="bi bi-geo-alt me-2 text-success"></i>
+                <strong>Địa điểm:</strong>
+                <span th:text="${event.location}"></span>
+              </li>
+              <li>
+                <i class="bi bi-people me-2 text-success"></i>
+                <strong>TNV đã đăng ký:</strong>
+                <span th:text="${event.registeredCount + '/' + event.maxVolunteers}">0/0</span>
+              </li>
+            </ul>
+
+            <!-- ── SỰ KIỆN LIÊN QUAN CỦA TỔ CHỨC ── -->
+            <div th:if="${relatedEvents != null and !#lists.isEmpty(relatedEvents)}">
+              <hr class="my-3"/>
+              <p class="sidebar-label" style="margin-bottom:.75rem;">
+                <i class="bi bi-newspaper"></i> Sự kiện khác của tổ chức
+              </p>
+              <a th:each="item : ${relatedEvents}"
+                 th:href="@{/events/{id}(id=${item.id})}"
+                 class="related-item">
+                <img th:src="${item.images != null and !#strings.isEmpty(item.images)
+                           ? item.images
+                           : 'https://placehold.co/54x54/e8f5e9/2e7d32?text=img'}"
+                     class="related-thumb" alt="thumb"
+                     onerror="this.src='https://placehold.co/54x54/e8f5e9/2e7d32?text=img'"/>
+                <div>
+                  <div class="related-title" th:text="${item.title}">Tên sự kiện</div>
+                  <div class="related-date">
+                    <i class="bi bi-calendar3 me-1"></i>
+                    <span th:text="${#temporals.format(item.startTime,'dd/MM/yyyy')}"></span>
+                  </div>
+                </div>
+              </a>
+            </div>
+
+            <!-- Không có sự kiện liên quan -->
+            <div th:if="${relatedEvents == null or #lists.isEmpty(relatedEvents)}">
+              <hr class="my-3"/>
+              <p class="sidebar-label mb-2"><i class="bi bi-newspaper"></i> Sự kiện khác của tổ chức</p>
+              <p class="text-muted small mb-0">Tổ chức này chưa có sự kiện nào khác.</p>
+            </div>
+
+          </div>
+        </div><!-- /sidebar -->
+
+      </div><!-- /row -->
+    </div><!-- /container -->
+  </div><!-- /detail-wrap -->
 </main>
+
+<!-- ═══ MODAL: Đăng ký ═══ -->
+<div class="modal fade" id="registerModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg" style="border-radius:20px;">
+      <div class="modal-header" style="background:var(--green-light); border-bottom:1px solid var(--green-border);">
+        <h5 class="modal-title fw-bold" style="color:var(--green);">
+          <i class="bi bi-pencil-square me-2"></i>Đăng ký tham gia sự kiện
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form th:action="@{/events/{id}/register(id=${event.id})}" method="post">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <div class="modal-body p-4">
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Họ và tên <span class="text-danger">*</span></label>
+            <input type="text" name="fullName" class="form-control"
+                   th:value="${volunteerFullName}" placeholder="Nhập họ và tên" required/>
+          </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Số điện thoại <span class="text-danger">*</span></label>
+            <input type="tel" name="phone" class="form-control"
+                   th:value="${volunteerPhone}" placeholder="Nhập số điện thoại" required/>
+          </div>
+          <div class="mb-1">
+            <label class="form-label fw-semibold">Lý do tham gia <span class="text-danger">*</span></label>
+            <textarea name="reason" class="form-control" rows="3"
+                      placeholder="Tại sao bạn muốn tham gia sự kiện này?" required></textarea>
+          </div>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Hủy</button>
+          <button type="submit" class="btn btn-primary rounded-pill px-4">
+            <i class="bi bi-check-lg me-1"></i>Xác nhận đăng ký
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ MODAL: Báo cáo ═══ -->
+<div class="modal fade" id="reportModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-dialog-centered">
+    <div class="modal-content border-0 shadow-lg" style="border-radius:20px;">
+      <div class="modal-header" style="background:#fef2f2; border-bottom:1px solid #fecaca;">
+        <h5 class="modal-title fw-bold text-danger">
+          <i class="bi bi-exclamation-triangle-fill me-2"></i>Báo cáo vi phạm
+        </h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <form th:action="@{/events/{id}/report(id=${event.id})}" method="post" id="reportForm">
+        <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <input type="hidden" name="reason" id="reportReasonFinal"/>
+        <div class="modal-body p-4">
+          <p class="small text-muted mb-3">Chọn lý do báo cáo. Chúng tôi sẽ xem xét trong vòng 24h.</p>
+          <div class="list-group mb-3">
+            <label class="list-group-item list-group-item-action d-flex gap-2 align-items-center">
+              <input class="form-check-input" type="radio" name="reasonRadio" value="Lừa đảo" checked/>
+              <span>Nội dung lừa đảo / Sai sự thật</span>
+            </label>
+            <label class="list-group-item list-group-item-action d-flex gap-2 align-items-center">
+              <input class="form-check-input" type="radio" name="reasonRadio" value="Ngôn từ đả kích"/>
+              <span>Ngôn từ thù ghét / Không phù hợp</span>
+            </label>
+            <label class="list-group-item list-group-item-action d-flex gap-2 align-items-center">
+              <input class="form-check-input" type="radio" name="reasonRadio" value="Spam"/>
+              <span>Spam / Quảng cáo rác</span>
+            </label>
+            <label class="list-group-item list-group-item-action d-flex gap-2 align-items-center">
+              <input class="form-check-input" type="radio" name="reasonRadio" value="Khác"/>
+              <span>Lý do khác</span>
+            </label>
+          </div>
+          <textarea class="form-control" id="reportDetailText" rows="2"
+                    placeholder="Mô tả thêm chi tiết (nếu cần)..."
+                    style="border-radius:10px;"></textarea>
+        </div>
+        <div class="modal-footer border-0">
+          <button type="button" class="btn btn-light rounded-pill px-4" data-bs-dismiss="modal">Đóng</button>
+          <button type="button" class="btn btn-danger rounded-pill px-4" onclick="submitReport()">
+            <i class="bi bi-flag-fill me-1"></i>Gửi báo cáo
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 <footer th:replace="~{shared/layout :: footer}"></footer>
 <th:block th:replace="~{shared/layout :: scripts}"></th:block>
+
+<script>
+  function submitReport() {
+    var sel = document.querySelector('input[name="reasonRadio"]:checked');
+    if (!sel) return;
+    var reason = sel.value;
+    var detail = document.getElementById('reportDetailText').value.trim();
+    if (reason === 'Khác' && detail.length === 0) {
+      alert('Vui lòng nhập chi tiết lý do báo cáo.');
+      return;
+    }
+    if (detail.length > 0) reason += ': ' + detail;
+    document.getElementById('reportReasonFinal').value = reason;
+    document.getElementById('reportForm').submit();
+  }
+</script>
+
 </body>
 </html>

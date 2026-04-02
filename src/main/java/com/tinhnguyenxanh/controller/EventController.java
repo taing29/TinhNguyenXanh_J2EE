@@ -44,8 +44,8 @@ public class EventController {
         // Filter by category if provided
         if (category != null && !category.isBlank()) {
             all = all.stream()
-                .filter(e -> category.equals(String.valueOf(e.getCategoryId())))
-                .toList();
+                    .filter(e -> category.equals(String.valueOf(e.getCategoryId())))
+                    .toList();
             model.addAttribute("selectedCategory", category);
         }
         int total = all.size();
@@ -69,8 +69,26 @@ public class EventController {
 
         List<EventComment> comments = commentRepo.findVisibleCommentsWithUserByEventId(id);
 
+        // Sự kiện liên quan: các sự kiện approved của cùng tổ chức, trừ sự kiện hiện tại
+        List<com.tinhnguyenxanh.dto.EventDTO> relatedEvents = java.util.Collections.emptyList();
+        if (eventDTO.getOrganizationId() != null) {
+            relatedEvents = eventService.getEventsByOrganization(eventDTO.getOrganizationId())
+                    .stream()
+                    .filter(e -> !e.getId().equals(id)
+                            && "approved".equalsIgnoreCase(e.getStatus())
+                            && !e.isHidden())
+                    .limit(4)
+                    .collect(java.util.stream.Collectors.toList());
+        }
+
+        // Kiểm tra sự kiện đã kết thúc chưa
+        boolean isExpired = eventDTO.getEndTime() != null
+                && eventDTO.getEndTime().isBefore(java.time.LocalDateTime.now());
+
         model.addAttribute("event", eventDTO);
         model.addAttribute("comments", comments);
+        model.addAttribute("relatedEvents", relatedEvents);
+        model.addAttribute("isExpired", isExpired);
         model.addAttribute("registrationDTO", new EventRegistrationDTO());
         model.addAttribute("alreadyRegistered", false);
         model.addAttribute("isFavorited", false);
