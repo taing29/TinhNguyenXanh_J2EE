@@ -60,6 +60,12 @@ public class EventRegistrationService {
     public boolean approve(Integer id) {
         EventRegistration reg = registrationRepo.findById(id).orElse(null);
         if (reg == null || !"Pending".equals(reg.getStatus())) return false;
+
+        // Kiểm tra số lượng TNV đã xác nhận có vượt quá maxVolunteers chưa
+        Event event = reg.getEvent();
+        int confirmed = registrationRepo.countByEvent_IdAndStatusIgnoreCase(event.getId(), "Confirmed");
+        if (confirmed >= event.getMaxVolunteers()) return false;
+
         reg.setStatus("Confirmed");
         registrationRepo.save(reg);
         return true;
@@ -78,5 +84,9 @@ public class EventRegistrationService {
         return volunteerRepo.findByUser_Id(userId)
                 .map(v -> registrationRepo.existsByEvent_IdAndVolunteer_Id(eventId, v.getId()))
                 .orElse(false);
+    }
+
+    public int countConfirmed(Integer eventId) {
+        return registrationRepo.countByEvent_IdAndStatusIgnoreCase(eventId, "Confirmed");
     }
 }

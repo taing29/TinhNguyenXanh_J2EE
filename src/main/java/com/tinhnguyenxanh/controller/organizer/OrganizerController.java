@@ -194,6 +194,20 @@ public class OrganizerController {
     public String approveReg(@PathVariable Integer id,
                              @RequestParam(required = false, defaultValue = "") String returnUrl,
                              RedirectAttributes redirectAttrs) {
+        // Kiểm tra slot trước khi approve để đưa ra thông báo rõ ràng
+        var regOpt = registrationService.getById(id);
+        if (regOpt.isPresent()) {
+            var reg = regOpt.get();
+            int confirmed = reg.getEvent() != null
+                    ? registrationService.countConfirmed(reg.getEvent().getId())
+                    : 0;
+            int maxV = reg.getEvent() != null ? reg.getEvent().getMaxVolunteers() : 0;
+            if (confirmed >= maxV) {
+                redirectAttrs.addFlashAttribute("error",
+                        "Sự kiện đã đủ số lượng tình nguyện viên (" + maxV + "/" + maxV + "). Không thể duyệt thêm.");
+                return returnUrl.isBlank() ? "redirect:/organizer/events" : "redirect:" + returnUrl;
+            }
+        }
         boolean ok = registrationService.approve(id);
         redirectAttrs.addFlashAttribute(ok ? "success" : "error",
                 ok ? "Đã xác nhận tình nguyện viên" : "Không thể xác nhận");
