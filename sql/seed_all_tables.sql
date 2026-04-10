@@ -26,12 +26,12 @@ SET FOREIGN_KEY_CHECKS = 1;
 INSERT INTO users
 (id, full_name, email, password, phone_number, address, age, avatar_path, role, registered_date, enabled, account_locked, lockout_end)
 VALUES
-(1, 'Admin System', 'admin@tinhnguyenxanh.vn', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhi6qV5y8bY4xXHzkwmo7aX6ixSeKuuG', '0901000001', 'TP.HCM', '30', '/uploads/avatars/admin.png', 'ADMIN', NOW() - INTERVAL 30 DAY, 1, 0, NULL),
-(2, 'Nguyen Van A', 'organizer1@tinhnguyenxanh.vn', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhi6qV5y8bY4xXHzkwmo7aX6ixSeKuuG', '0901000002', 'Quan 1, TP.HCM', '28', '/uploads/avatars/org1.png', 'ORGANIZER', NOW() - INTERVAL 20 DAY, 1, 0, NULL),
-(3, 'Tran Thi B', 'organizer2@tinhnguyenxanh.vn', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhi6qV5y8bY4xXHzkwmo7aX6ixSeKuuG', '0901000003', 'Quan Hai Chau, Da Nang', '29', '/uploads/avatars/org2.png', 'ORGANIZER', NOW() - INTERVAL 18 DAY, 1, 0, NULL),
-(4, 'Le Van C', 'volunteer1@tinhnguyenxanh.vn', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhi6qV5y8bY4xXHzkwmo7aX6ixSeKuuG', '0901000004', 'Thu Duc, TP.HCM', '22', '/uploads/avatars/v1.png', 'VOLUNTEER', NOW() - INTERVAL 15 DAY, 1, 0, NULL),
-(5, 'Pham Thi D', 'volunteer2@tinhnguyenxanh.vn', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhi6qV5y8bY4xXHzkwmo7aX6ixSeKuuG', '0901000005', 'Ninh Kieu, Can Tho', '24', '/uploads/avatars/v2.png', 'VOLUNTEER', NOW() - INTERVAL 12 DAY, 1, 0, NULL),
-(6, 'Hoang Van E', 'volunteer3@tinhnguyenxanh.vn', '$2a$10$7EqJtq98hPqEX7fNZaFWoOhi6qV5y8bY4xXHzkwmo7aX6ixSeKuuG', '0901000006', 'Bien Hoa, Dong Nai', '26', '/uploads/avatars/v3.png', 'VOLUNTEER', NOW() - INTERVAL 10 DAY, 1, 0, NULL);
+(1, 'Admin System', 'admin@tinhnguyenxanh.vn', '$2a$12$YGM7torrD5osv.eXWniVZOsOhiNA61V29Iz0KvrdvR8DTOZ3MJuhi', '0901000001', 'TP.HCM', '30', '/uploads/avatars/admin.png', 'ADMIN', NOW() - INTERVAL 30 DAY, 1, 0, NULL),
+(2, 'Nguyen Van A', 'organizer1@tinhnguyenxanh.vn', '$2a$12$YGM7torrD5osv.eXWniVZOsOhiNA61V29Iz0KvrdvR8DTOZ3MJuhi', '0901000002', 'Quan 1, TP.HCM', '28', '/uploads/avatars/org1.png', 'ORGANIZER', NOW() - INTERVAL 20 DAY, 1, 0, NULL),
+(3, 'Tran Thi B', 'organizer2@tinhnguyenxanh.vn', '$2a$12$YGM7torrD5osv.eXWniVZOsOhiNA61V29Iz0KvrdvR8DTOZ3MJuhi', '0901000003', 'Quan Hai Chau, Da Nang', '29', '/uploads/avatars/org2.png', 'ORGANIZER', NOW() - INTERVAL 18 DAY, 1, 0, NULL),
+(4, 'Le Van C', 'volunteer1@tinhnguyenxanh.vn', '$2a$12$YGM7torrD5osv.eXWniVZOsOhiNA61V29Iz0KvrdvR8DTOZ3MJuhi', '0901000004', 'Thu Duc, TP.HCM', '22', '/uploads/avatars/v1.png', 'VOLUNTEER', NOW() - INTERVAL 15 DAY, 1, 0, NULL),
+(5, 'Pham Thi D', 'volunteer2@tinhnguyenxanh.vn', '$2a$12$YGM7torrD5osv.eXWniVZOsOhiNA61V29Iz0KvrdvR8DTOZ3MJuhi', '0901000005', 'Ninh Kieu, Can Tho', '24', '/uploads/avatars/v2.png', 'VOLUNTEER', NOW() - INTERVAL 12 DAY, 1, 0, NULL),
+(6, 'Hoang Van E', 'volunteer3@tinhnguyenxanh.vn', '$2a$12$YGM7torrD5osv.eXWniVZOsOhiNA61V29Iz0KvrdvR8DTOZ3MJuhi', '0901000006', 'Bien Hoa, Dong Nai', '26', '/uploads/avatars/v3.png', 'VOLUNTEER', NOW() - INTERVAL 10 DAY, 1, 0, NULL);
 
 -- =====================================================
 -- 2) EVENT CATEGORIES
