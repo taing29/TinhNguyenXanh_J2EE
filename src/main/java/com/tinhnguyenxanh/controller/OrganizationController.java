@@ -25,11 +25,26 @@ public class OrganizationController {
     private final OrganizationService orgService;
     private final ReviewRepository reviewRepo;
     private final UserRepository userRepo;
+    private final com.tinhnguyenxanh.service.EventService eventService;
 
     @GetMapping
-    public String listOrganizations(@RequestParam(defaultValue = "0") int page, Model model) {
+    public String listOrganizations(@RequestParam(defaultValue = "0") int page,
+                                    @RequestParam(required = false) String q,
+                                    Model model) {
         int pageSize = 6;
         var all = orgService.getAllVerified();
+
+        // Lọc theo từ khoá tìm kiếm
+        if (q != null && !q.isBlank()) {
+            String kw = q.toLowerCase().trim();
+            all = all.stream()
+                    .filter(o -> o.getName() != null && o.getName().toLowerCase().contains(kw)
+                            || o.getDescription() != null && o.getDescription().toLowerCase().contains(kw)
+                            || o.getOrganizationType() != null && o.getOrganizationType().toLowerCase().contains(kw))
+                    .toList();
+            model.addAttribute("searchQuery", q);
+        }
+
         int total = all.size();
         int totalPages = Math.max(1, (int) Math.ceil((double) total / pageSize));
         page = Math.max(0, Math.min(page, totalPages - 1));
@@ -49,9 +64,26 @@ public class OrganizationController {
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy tổ chức"));
         var reviews = reviewRepo.findByOrganization_Id(id);
         boolean alreadyReviewed = userDetails != null && reviewRepo.existsByUser_IdAndOrganization_Id(userDetails.getId(), id);
+
+        // Các sự kiện đã approved của tổ chức, tính sẵn isExpired ở Java
+        java.time.LocalDateTime now = java.time.LocalDateTime.now();
+        var orgEvents = eventService.getEventsByOrganization(id).stream()
+                .filter(e -> "approved".equalsIgnoreCase(e.getStatus()) && !e.isHidden())
+                .sorted(java.util.Comparator.comparing(
+                        com.tinhnguyenxanh.dto.EventDTO::getStartTime).reversed())
+                .collect(java.util.stream.Collectors.toList());
+
+        // Tập hợp các id event đã kết thúc để template dùng
+        java.util.Set<Integer> expiredIds = orgEvents.stream()
+                .filter(e -> e.getEndTime() != null && e.getEndTime().isBefore(now))
+                .map(com.tinhnguyenxanh.dto.EventDTO::getId)
+                .collect(java.util.stream.Collectors.toSet());
+
         model.addAttribute("org", org);
         model.addAttribute("reviews", reviews);
         model.addAttribute("alreadyReviewed", alreadyReviewed);
+        model.addAttribute("orgEvents", orgEvents);
+        model.addAttribute("expiredIds", expiredIds);
         return "organization/details";
     }
 

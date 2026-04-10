@@ -3,7 +3,7 @@
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 
 <head th:replace="~{shared/layout :: head('Sự kiện')}">
-  <style>/* replaced by fragment */</style>
+  <style>/* replaced */</style>
 </head>
 
 <body>
@@ -12,151 +12,134 @@
 
 <style>
   :root {
-    --green: #2e7d32; --green-dark: #1b5e20;
-    --green-light: #f0fdf4; --green-border: #bbf7d0;
-    --text: #0f172a; --muted: #64748b; --border: #e5e7eb;
-    --radius: 14px; --shadow-card: 0 2px 12px rgba(0,0,0,.08);
+    --green:#2e7d32; --green-dark:#1b5e20;
+    --green-light:#f0fdf4; --green-border:#bbf7d0;
+    --text:#0f172a; --muted:#64748b; --border:#e5e7eb;
+    --radius:14px; --shadow-card:0 2px 12px rgba(0,0,0,.08);
   }
 
-  .events-wrap { background: #f8fafb; min-height: 100vh; padding: 2.5rem 0 4rem; }
+  .events-wrap { background:#f8fafb; min-height:100vh; padding:2.5rem 0 4rem; }
 
-  /* Page header */
-  .page-header { margin-bottom: 1.75rem; }
-  .page-title  { font-size: 1.6rem; font-weight: 800; color: var(--green); margin-bottom: .15rem; }
-  .page-sub    { font-size: .88rem; color: var(--muted); }
+  /* Header */
+  .page-title { font-size:1.55rem; font-weight:800; color:var(--green); margin-bottom:.1rem; }
+  .page-sub   { font-size:.87rem; color:var(--muted); }
 
-  /* Search bar */
-  .search-wrap { position: relative; max-width: 340px; }
+  /* Search */
+  .search-wrap { position:relative; max-width:320px; }
   .search-wrap input {
-    border: 1px solid var(--border); border-radius: 10px; padding: .55rem 1rem .55rem 2.5rem;
-    font-size: .9rem; background: #fff; width: 100%;
+    border:1px solid var(--border); border-radius:10px;
+    padding:.52rem 1rem .52rem 2.4rem; font-size:.9rem;
+    background:#fff; width:100%; transition:border .2s;
   }
-  .search-wrap input:focus { outline: none; border-color: var(--green); box-shadow: 0 0 0 3px rgba(46,125,50,.1); }
-  .search-wrap .search-icon {
-    position: absolute; left: .75rem; top: 50%; transform: translateY(-50%);
-    color: var(--muted); font-size: .9rem; pointer-events: none;
-  }
-  .search-wrap .btn-search {
-    position: absolute; right: .4rem; top: 50%; transform: translateY(-50%);
-    background: var(--green); color: #fff; border: none;
-    border-radius: 7px; padding: .25rem .65rem; font-size: .82rem; cursor: pointer;
-  }
+  .search-wrap input:focus { outline:none; border-color:var(--green); box-shadow:0 0 0 3px rgba(46,125,50,.1); }
+  .search-icon { position:absolute; left:.75rem; top:50%; transform:translateY(-50%); color:var(--muted); font-size:.88rem; pointer-events:none; }
+  .btn-search  { position:absolute; right:.35rem; top:50%; transform:translateY(-50%);
+                 background:var(--green); color:#fff; border:none; border-radius:7px;
+                 padding:.22rem .6rem; font-size:.8rem; cursor:pointer; }
 
-  /* Category filter */
-  .filter-wrap { margin-bottom: 1.75rem; display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; }
-  .filter-label { font-size: .8rem; font-weight: 700; color: var(--muted); text-transform: uppercase;
-                  letter-spacing: .04em; margin-right: .25rem; white-space: nowrap; }
-  .filter-btn {
-    padding: .38rem 1rem; border-radius: 20px; font-size: .85rem; font-weight: 600;
-    border: 1.5px solid var(--border); background: #fff; color: var(--muted);
-    cursor: pointer; text-decoration: none; transition: all .18s; white-space: nowrap;
-  }
-  .filter-btn:hover  { border-color: var(--green); color: var(--green); background: var(--green-light); }
-  .filter-btn.active { border-color: var(--green); background: var(--green); color: #fff; }
+  /* Filter */
+  .filter-wrap  { margin-bottom:1.75rem; display:flex; gap:.45rem; flex-wrap:wrap; align-items:center; }
+  .filter-label { font-size:.78rem; font-weight:700; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; margin-right:.2rem; white-space:nowrap; }
+  .filter-btn   { padding:.35rem .95rem; border-radius:20px; font-size:.83rem; font-weight:600; border:1.5px solid var(--border); background:#fff; color:var(--muted); cursor:pointer; text-decoration:none; transition:all .16s; white-space:nowrap; }
+  .filter-btn:hover  { border-color:var(--green); color:var(--green); background:var(--green-light); }
+  .filter-btn.active { border-color:var(--green); background:var(--green); color:#fff; }
 
   /* Event card */
   .event-card {
-    background: #fff; border: 1px solid var(--border);
-    border-radius: var(--radius); overflow: hidden;
-    box-shadow: var(--shadow-card); transition: transform .2s, box-shadow .2s;
-    display: flex; flex-direction: column; height: 100%;
+    background:#fff; border:1px solid var(--border);
+    border-radius:var(--radius); overflow:hidden;
+    box-shadow:var(--shadow-card); transition:transform .2s, box-shadow .2s;
+    display:flex; flex-direction:column; height:100%;
   }
-  .event-card:hover { transform: translateY(-4px); box-shadow: 0 8px 28px rgba(0,0,0,.12); }
+  .event-card:hover { transform:translateY(-4px); box-shadow:0 8px 28px rgba(0,0,0,.12); }
 
-  .event-thumb-wrap { position: relative; overflow: hidden; }
-  .event-thumb {
-    width: 100%; height: 190px; object-fit: cover; display: block;
-    transition: transform .3s;
-  }
-  .event-card:hover .event-thumb { transform: scale(1.04); }
+  .thumb-wrap { position:relative; overflow:hidden; }
+  .ev-thumb   { width:100%; height:188px; object-fit:cover; display:block; transition:transform .3s; }
+  .event-card:hover .ev-thumb { transform:scale(1.04); }
 
-  /* Overlay badge expired */
-  .thumb-overlay {
-    position: absolute; inset: 0;
-    background: rgba(0,0,0,.35); display: flex; align-items: center; justify-content: center;
+  /* Expired overlay */
+  .expired-overlay {
+    position:absolute; inset:0; background:rgba(0,0,0,.32);
+    display:flex; align-items:center; justify-content:center;
   }
-  .thumb-overlay-text {
-    background: rgba(0,0,0,.6); color: #fff; border-radius: 20px;
-    font-size: .8rem; font-weight: 700; padding: .35rem .9rem;
-    display: flex; align-items: center; gap: .35rem;
+  .expired-label {
+    background:rgba(0,0,0,.55); color:#fff; border-radius:20px;
+    font-size:.78rem; font-weight:700; padding:.28rem .8rem;
+    display:flex; align-items:center; gap:.3rem;
   }
 
-  /* Favorite button */
-  .btn-fav {
-    position: absolute; top: .65rem; right: .65rem;
-    width: 34px; height: 34px; border-radius: 50%;
-    background: rgba(255,255,255,.9); border: none;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: all .2s; box-shadow: 0 1px 4px rgba(0,0,0,.15);
-    backdrop-filter: blur(4px);
-  }
-  .btn-fav:hover       { background: #fff; transform: scale(1.1); }
-  .btn-fav i           { font-size: 1rem; color: #d1d5db; transition: color .2s; }
-  .btn-fav.favorited i { color: #ef4444; }
-
-  /* Category badge on card */
+  /* Cat badge */
   .cat-badge {
-    position: absolute; top: .65rem; left: .65rem;
-    background: rgba(255,255,255,.92); color: var(--green);
-    border-radius: 20px; font-size: .72rem; font-weight: 700;
-    padding: .2rem .65rem; backdrop-filter: blur(4px);
+    position:absolute; top:.6rem; left:.6rem;
+    background:rgba(255,255,255,.92); color:var(--green);
+    border-radius:20px; font-size:.71rem; font-weight:700;
+    padding:.17rem .6rem; backdrop-filter:blur(4px);
   }
 
-  .card-content { padding: 1.1rem 1.1rem .9rem; display: flex; flex-direction: column; flex: 1; }
-  .event-title  {
-    font-weight: 700; font-size: .97rem; line-height: 1.35; margin-bottom: .5rem; color: var(--text);
-    display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden;
+  /* Fav button — state driven by server-side class */
+  .btn-fav {
+    position:absolute; top:.6rem; right:.6rem;
+    width:32px; height:32px; border-radius:50%;
+    background:rgba(255,255,255,.92); border:none;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; transition:all .18s;
+    box-shadow:0 1px 4px rgba(0,0,0,.14);
   }
-  .event-meta   { font-size: .8rem; color: var(--muted); margin-bottom: .3rem;
-                  display: flex; align-items: center; gap: .35rem; }
+  .btn-fav:hover     { background:#fff; transform:scale(1.1); }
+  .btn-fav i         { font-size:.95rem; color:#d1d5db; transition:color .18s; }
+  .btn-fav.favorited i { color:#ef4444; }
 
-  /* Progress mini */
-  .progress-mini { height: 5px; border-radius: 5px; background: #e5e7eb; margin: .7rem 0 .9rem; }
-  .progress-mini-bar { height: 100%; border-radius: 5px; background: var(--green); transition: width .4s; }
+  .card-content { padding:1rem 1rem .85rem; display:flex; flex-direction:column; flex:1; }
+  .ev-title {
+    font-weight:700; font-size:.95rem; line-height:1.35; color:var(--text); margin-bottom:.45rem;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .ev-meta { font-size:.79rem; color:var(--muted); display:flex; align-items:center; gap:.32rem; margin-bottom:.27rem; }
 
-  .card-footer-row { display: flex; justify-content: space-between; align-items: center; margin-top: auto; }
-  .reg-count { font-size: .8rem; color: var(--muted); }
+  .progress-mini { height:5px; border-radius:5px; background:#e5e7eb; margin:.65rem 0 .8rem; }
+  .progress-mini-bar { height:100%; border-radius:5px; background:var(--green); }
+
+  .card-footer-row { display:flex; justify-content:space-between; align-items:center; margin-top:auto; }
+  .reg-count { font-size:.79rem; color:var(--muted); }
   .btn-detail {
-    background: var(--green); color: #fff; border: none; border-radius: 8px;
-    padding: .38rem .85rem; font-size: .83rem; font-weight: 600; text-decoration: none;
-    display: inline-flex; align-items: center; gap: .3rem; transition: background .2s;
+    background:var(--green); color:#fff; border:none; border-radius:8px;
+    padding:.35rem .8rem; font-size:.81rem; font-weight:600;
+    text-decoration:none; display:inline-flex; align-items:center; gap:.28rem;
+    transition:background .18s;
   }
-  .btn-detail:hover { background: var(--green-dark); color: #fff; }
+  .btn-detail:hover { background:var(--green-dark); color:#fff; }
 
-  /* Empty state */
-  .empty-state { text-align: center; padding: 4rem 2rem; color: var(--muted); }
-  .empty-state i { font-size: 3rem; display: block; margin-bottom: 1rem; color: #d1d5db; }
+  /* Empty */
+  .empty-state { text-align:center; padding:4rem 2rem; color:var(--muted); }
+  .empty-state i { font-size:3rem; display:block; margin-bottom:1rem; color:#d1d5db; }
 
   /* Toast */
   #fav-toast {
-    position: fixed; bottom: 1.5rem; right: 1.5rem;
-    background: var(--green); color: #fff;
-    padding: .65rem 1.25rem; border-radius: 10px;
-    z-index: 9999; font-size: .88rem; font-weight: 500;
-    box-shadow: 0 4px 16px rgba(0,0,0,.18);
-    opacity: 0; transition: opacity .3s; pointer-events: none;
+    position:fixed; bottom:1.5rem; right:1.5rem;
+    background:var(--green); color:#fff;
+    padding:.6rem 1.2rem; border-radius:10px;
+    z-index:9999; font-size:.87rem; font-weight:500;
+    box-shadow:0 4px 16px rgba(0,0,0,.18);
+    opacity:0; transition:opacity .3s; pointer-events:none;
   }
 
   /* Pagination */
-  .page-link { color: var(--green); border-radius: 8px !important; margin: 0 2px; }
-  .page-item.active .page-link { background: var(--green); border-color: var(--green); color: #fff; }
-  .page-link:hover { color: var(--green-dark); background: var(--green-light); }
+  .page-link { color:var(--green); border-radius:8px !important; margin:0 2px; }
+  .page-item.active .page-link { background:var(--green); border-color:var(--green); color:#fff; }
+  .page-link:hover { color:var(--green-dark); background:var(--green-light); }
 
-  @media (max-width: 576px) {
-    .event-thumb { height: 160px; }
-    .page-title  { font-size: 1.3rem; }
-  }
+  @media (max-width:576px) { .ev-thumb { height:160px; } }
 </style>
 
 <main>
   <div class="events-wrap">
     <div class="container">
 
-      <!-- Page header + Search -->
-      <div class="page-header d-flex justify-content-between align-items-start flex-wrap gap-3">
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-start flex-wrap gap-3 mb-4">
         <div>
           <h2 class="page-title"><i class="bi bi-calendar-event me-2"></i>Tất cả sự kiện</h2>
-          <p class="page-sub" th:text="${totalEvents + ' sự kiện đang diễn ra'}">0 sự kiện</p>
+          <p class="page-sub" th:text="${totalEvents + ' sự kiện'}">0 sự kiện</p>
         </div>
         <form th:action="@{/search}" method="get">
           <div class="search-wrap">
@@ -170,47 +153,38 @@
       <!-- Category filter -->
       <div class="filter-wrap">
         <span class="filter-label"><i class="bi bi-funnel me-1"></i>Lọc:</span>
-        <a th:href="@{/events}"
-           class="filter-btn"
-           th:classappend="${selectedCategory == null} ? 'active' : ''">
-          🌿 Tất cả
-        </a>
+        <a th:href="@{/events}" class="filter-btn"
+           th:classappend="${selectedCategory == null} ? ' active' : ''">🌿 Tất cả</a>
         <a th:each="cat : ${categories}"
            th:href="@{/events(category=${cat.id})}"
            class="filter-btn"
-           th:classappend="${selectedCategory != null and selectedCategory == cat.id.toString()} ? 'active' : ''"
+           th:classappend="${selectedCategory != null and selectedCategory == cat.id.toString()} ? ' active' : ''"
            th:text="${cat.name}">Danh mục</a>
       </div>
 
-      <!-- Event grid -->
+      <!-- Grid -->
       <div class="row g-4" th:if="${!#lists.isEmpty(events)}">
         <div th:each="ev : ${events}" class="col-sm-6 col-lg-4">
-
-          <!-- Tính expired trong template -->
           <div class="event-card">
-            <div class="event-thumb-wrap">
+            <div class="thumb-wrap">
               <img th:src="${ev.images != null and !#strings.isEmpty(ev.images)
                          ? ev.images
-                         : 'https://placehold.co/400x190/e8f5e9/2e7d32?text=No+Image'}"
-                   class="event-thumb" alt="event"
-                   onerror="this.src='https://placehold.co/400x190/e8f5e9/2e7d32?text=No+Image'"/>
+                         : 'https://placehold.co/400x188/e8f5e9/2e7d32?text=No+Image'}"
+                   class="ev-thumb" alt="event"
+                   onerror="this.src='https://placehold.co/400x188/e8f5e9/2e7d32?text=No+Image'"/>
 
-              <!-- Overlay nếu đã kết thúc -->
-              <div th:if="${ev.endTime != null and ev.endTime.isBefore(#temporals.createNow())}"
-                   class="thumb-overlay">
-            <span class="thumb-overlay-text">
-              <i class="bi bi-clock-history"></i> Đã kết thúc
-            </span>
+              <!-- Overlay expired — dùng expiredIds từ server, không gọi temporals.createNow -->
+              <div th:if="${expiredIds.contains(ev.id)}" class="expired-overlay">
+                <span class="expired-label"><i class="bi bi-clock-history"></i> Đã kết thúc</span>
               </div>
 
-              <!-- Badge danh mục -->
               <span class="cat-badge" th:text="${ev.categoryName}">Danh mục</span>
 
-              <!-- Nút yêu thích (AJAX, chỉ hiện khi đã đăng nhập) -->
+              <!-- Nút yêu thích: class 'favorited' set từ server → đúng khi reload trang -->
               <button sec:authorize="isAuthenticated()"
                       class="btn-fav"
+                      th:classappend="${favoritedIds.contains(ev.id)} ? ' favorited' : ''"
                       th:attr="data-event-id=${ev.id}"
-                      th:id="'fav-btn-' + ${ev.id}"
                       onclick="toggleFav(this)"
                       title="Yêu thích">
                 <i class="bi bi-heart-fill"></i>
@@ -218,27 +192,20 @@
             </div>
 
             <div class="card-content">
-              <div class="event-title" th:text="${ev.title}">Tên sự kiện</div>
-
-              <div class="event-meta">
-                <i class="bi bi-calendar3"></i>
+              <div class="ev-title" th:text="${ev.title}">Tên sự kiện</div>
+              <div class="ev-meta"><i class="bi bi-calendar3"></i>
                 <span th:text="${#temporals.format(ev.startTime,'dd/MM/yyyy HH:mm')}">--</span>
               </div>
-              <div class="event-meta">
-                <i class="bi bi-geo-alt"></i>
+              <div class="ev-meta"><i class="bi bi-geo-alt"></i>
                 <span class="text-truncate" th:text="${ev.location}">--</span>
               </div>
-              <div class="event-meta">
-                <i class="bi bi-building"></i>
+              <div class="ev-meta"><i class="bi bi-building"></i>
                 <span class="text-truncate" th:text="${ev.organizationName}">--</span>
               </div>
-
-              <!-- Progress mini -->
               <div class="progress-mini" th:if="${ev.maxVolunteers > 0}">
                 <div class="progress-mini-bar"
                      th:style="'width:' + (${ev.maxVolunteers > 0 ? ev.registeredCount * 100 / ev.maxVolunteers : 0}) + '%'"></div>
               </div>
-
               <div class="card-footer-row">
             <span class="reg-count">
               <i class="bi bi-people me-1"></i>
@@ -250,36 +217,33 @@
               </div>
             </div>
           </div>
-
         </div>
       </div>
 
-      <!-- Empty state -->
+      <!-- Empty -->
       <div th:if="${#lists.isEmpty(events)}" class="empty-state">
         <i class="bi bi-calendar-x"></i>
         <p class="fw-semibold">Không có sự kiện nào</p>
         <p class="small">Thử chọn danh mục khác hoặc quay lại sau.</p>
-        <a th:href="@{/events}" class="btn btn-outline-success btn-sm rounded-pill mt-2">Xem tất cả sự kiện</a>
+        <a th:href="@{/events}" class="btn btn-outline-success btn-sm rounded-pill mt-2">Xem tất cả</a>
       </div>
 
       <!-- Pagination -->
-      <nav th:if="${totalPages > 1}" class="mt-5 d-flex justify-content-center" aria-label="Phân trang">
+      <nav th:if="${totalPages > 1}" class="mt-5 d-flex justify-content-center">
         <ul class="pagination gap-1">
           <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
-            <a class="page-link"
-               th:href="@{/events(page=${currentPage - 1}, category=${selectedCategory})}">
+            <a class="page-link" th:href="@{/events(page=${currentPage-1},category=${selectedCategory})}">
               <i class="bi bi-chevron-left"></i>
             </a>
           </li>
-          <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
+          <li th:each="i : ${#numbers.sequence(0,totalPages-1)}"
               class="page-item" th:classappend="${i == currentPage} ? 'active'">
             <a class="page-link"
-               th:href="@{/events(page=${i}, category=${selectedCategory})}"
-               th:text="${i + 1}">1</a>
+               th:href="@{/events(page=${i},category=${selectedCategory})}"
+               th:text="${i+1}">1</a>
           </li>
-          <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
-            <a class="page-link"
-               th:href="@{/events(page=${currentPage + 1}, category=${selectedCategory})}">
+          <li class="page-item" th:classappend="${currentPage == totalPages-1} ? 'disabled'">
+            <a class="page-link" th:href="@{/events(page=${currentPage+1},category=${selectedCategory})}">
               <i class="bi bi-chevron-right"></i>
             </a>
           </li>
@@ -290,7 +254,6 @@
   </div>
 </main>
 
-<!-- Toast -->
 <div id="fav-toast"></div>
 
 <footer th:replace="~{shared/layout :: footer}"></footer>
@@ -298,37 +261,31 @@
 
 <script th:inline="javascript">
   /*<![CDATA[*/
-  const _csrfToken  = /*[[${_csrf != null ? _csrf.token : ''}]]*/ '';
-  const _csrfHeader = /*[[${_csrf != null ? _csrf.headerName : 'X-CSRF-TOKEN'}]]*/ 'X-CSRF-TOKEN';
+  const _csrf  = /*[[${_csrf != null ? _csrf.token : ''}]]*/ '';
+  const _hdr   = /*[[${_csrf != null ? _csrf.headerName : 'X-CSRF-TOKEN'}]]*/ 'X-CSRF-TOKEN';
 
   async function toggleFav(btn) {
-    const eventId = btn.dataset.eventId;
+    const id = btn.dataset.eventId;
     btn.disabled = true;
     try {
-      const res = await fetch('/events/' + eventId + '/favorite/ajax', {
-        method: 'POST',
-        headers: { [_csrfHeader]: _csrfToken, 'Content-Type': 'application/json' }
+      const res = await fetch('/events/' + id + '/favorite/ajax', {
+        method:'POST', headers:{ [_hdr]:_csrf, 'Content-Type':'application/json' }
       });
+      if (res.status === 401) { window.location.href = '/auth/login'; return; }
       if (res.ok) {
         const data = await res.json();
         btn.classList.toggle('favorited', data.favorited);
         showToast(data.favorited ? '❤️ Đã thêm vào yêu thích' : 'Đã bỏ yêu thích');
-      } else if (res.status === 401) {
-        window.location.href = '/auth/login';
       }
-    } catch (e) {
-      console.error(e);
-    } finally {
-      btn.disabled = false;
-    }
+    } catch(e) { console.error(e); }
+    finally { btn.disabled = false; }
   }
 
   function showToast(msg) {
     const t = document.getElementById('fav-toast');
-    t.textContent = msg;
-    t.style.opacity = '1';
-    clearTimeout(t._timer);
-    t._timer = setTimeout(() => { t.style.opacity = '0'; }, 2400);
+    t.textContent = msg; t.style.opacity = '1';
+    clearTimeout(t._t);
+    t._t = setTimeout(() => { t.style.opacity = '0'; }, 2400);
   }
   /*]]>*/
 </script>
