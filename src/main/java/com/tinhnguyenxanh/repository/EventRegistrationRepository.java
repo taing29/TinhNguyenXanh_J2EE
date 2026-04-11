@@ -28,4 +28,7 @@ public interface EventRegistrationRepository extends JpaRepository<EventRegistra
 
     @Query("SELECT r FROM EventRegistration r JOIN FETCH r.event WHERE r.volunteer.id = :vId ORDER BY r.registeredDate DESC")
     List<EventRegistration> findByVolunteerIdWithEvent(@Param("vId") Integer volunteerId);
+
+    @Query("SELECT r FROM EventRegistration r JOIN FETCH r.event JOIN FETCH r.volunteer ORDER BY r.registeredDate DESC")
+    List<EventRegistration> findAllWithEventAndVolunteer();
 }

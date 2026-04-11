@@ -69,6 +69,17 @@ public class UserService {
     }
 
     @Transactional
+    public boolean updateUserRole(Long userId, Role role) {
+        User user = userRepo.findById(userId).orElse(null);
+        if (user == null || role == null) {
+            return false;
+        }
+        user.setRole(role);
+        userRepo.save(user);
+        return true;
+    }
+
+    @Transactional
     public boolean updateVolunteerProfile(Long userId, String fullName, String phone, String address,
                                           String bio, String skills, String age,
                                           org.springframework.web.multipart.MultipartFile avatarFile) {

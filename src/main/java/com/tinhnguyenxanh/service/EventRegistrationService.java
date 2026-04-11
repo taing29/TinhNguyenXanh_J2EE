@@ -52,6 +52,10 @@ public class EventRegistrationService {
         return registrationRepo.findByVolunteerIdWithEvent(volunteerId);
     }
 
+    public List<EventRegistration> getAllRegistrations() {
+        return registrationRepo.findAllWithEventAndVolunteer();
+    }
+
     public Optional<EventRegistration> getById(Integer id) {
         return registrationRepo.findById(id);
     }
@@ -88,5 +92,23 @@ public class EventRegistrationService {
 
     public int countConfirmed(Integer eventId) {
         return registrationRepo.countByEvent_IdAndStatusIgnoreCase(eventId, "Confirmed");
+    }
+
+    public int countPending() {
+        return (int) registrationRepo.findAll().stream()
+                .filter(r -> "Pending".equalsIgnoreCase(r.getStatus()))
+                .count();
+    }
+
+    public int countConfirmedAll() {
+        return (int) registrationRepo.findAll().stream()
+                .filter(r -> "Confirmed".equalsIgnoreCase(r.getStatus()))
+                .count();
+    }
+
+    public int countRejectedAll() {
+        return (int) registrationRepo.findAll().stream()
+                .filter(r -> "Rejected".equalsIgnoreCase(r.getStatus()))
+                .count();
     }
 }

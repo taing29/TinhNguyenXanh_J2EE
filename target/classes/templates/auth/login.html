@@ -26,8 +26,7 @@
           <div th:if="${error}" class="alert alert-danger"><i class="bi bi-exclamation-circle me-2"></i><span th:text="${error}"></span></div>
           <div th:if="${message}" class="alert alert-success"><i class="bi bi-check-circle me-2"></i><span th:text="${message}"></span></div>
 
-          <form th:action="@{/auth/login}" method="post">
-            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <form action="/auth/login" method="post">
             <div class="mb-3">
               <label class="form-label fw-semibold">Email</label>
               <input type="email" name="email" class="form-control" placeholder="your@email.com" required/>

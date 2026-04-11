@@ -45,6 +45,15 @@
     <a th:href="@{/admin/users}" th:classappend="${activePage == 'users'} ? ' active'">
       <i class="bi bi-people me-2"></i>Người dùng
     </a>
+    <a th:href="@{/admin/donations}" th:classappend="${activePage == 'donations'} ? ' active'">
+      <i class="bi bi-cash-stack me-2"></i>Quyên góp
+    </a>
+    <a th:href="@{/admin/subscriptions}" th:classappend="${activePage == 'subscriptions'} ? ' active'">
+      <i class="bi bi-envelope-paper-heart me-2"></i>Đăng ký nhận tin
+    </a>
+    <a th:href="@{/admin/registrations}" th:classappend="${activePage == 'registrations'} ? ' active'">
+      <i class="bi bi-journal-check me-2"></i>Đăng ký sự kiện
+    </a>
     <a th:href="@{/admin/categories}" th:classappend="${activePage == 'categories'} ? ' active'">
       <i class="bi bi-tags me-2"></i>Danh mục
     </a>

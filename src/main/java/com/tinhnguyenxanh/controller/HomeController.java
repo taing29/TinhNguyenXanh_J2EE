@@ -4,10 +4,12 @@ import com.tinhnguyenxanh.dto.DonationDTO;
 import com.tinhnguyenxanh.entity.Donation;
 import com.tinhnguyenxanh.repository.DonationRepository;
 import com.tinhnguyenxanh.repository.EventFavoriteRepository;
+import com.tinhnguyenxanh.repository.OrganizationRepository;
 import com.tinhnguyenxanh.security.CustomUserDetails;
 import com.tinhnguyenxanh.service.EmailService;
 import com.tinhnguyenxanh.service.EventService;
 import com.tinhnguyenxanh.service.MomoService;
+import com.tinhnguyenxanh.service.SubscriptionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -30,26 +32,52 @@ public class HomeController {
     private final MomoService momoService;
     private final EmailService emailService;
     private final EventFavoriteRepository favoriteRepo;
+    private final OrganizationRepository organizationRepo;
+    private final SubscriptionService subscriptionService;
 
     @GetMapping({"/", "/home"})
     public String index(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
-        var allApproved = eventService.getApprovedEvents();
-        // Lấy tối đa 8 sự kiện nổi bật (nhiều đăng ký nhất) cho slider
-        var featuredEvents = allApproved.stream()
-                .sorted(java.util.Comparator.comparingInt(
-                        com.tinhnguyenxanh.dto.EventDTO::getRegisteredCount).reversed())
-                .limit(3)
-                .toList();
-        model.addAttribute("approvedEvents", featuredEvents);
+        try {
+            var allApproved = eventService.getApprovedEvents();
+            // Lấy tối đa 3 sự kiện nổi bật (nhiều đăng ký nhất) cho homepage
+            var featuredEvents = allApproved.stream()
+                    .sorted(java.util.Comparator.comparingInt(
+                            com.tinhnguyenxanh.dto.EventDTO::getRegisteredCount).reversed())
+                    .limit(3)
+                    .toList();
+            model.addAttribute("approvedEvents", featuredEvents);
 
-        // Truyền danh sách eventId đã yêu thích để frontend biết đánh dấu
-        if (userDetails != null) {
-            Set<Integer> favIds = favoriteRepo.findByUser_Id(userDetails.getId())
-                    .stream()
-                    .map(ef -> ef.getEvent().getId())
-                    .collect(Collectors.toSet());
-            model.addAttribute("favoritedIds", favIds);
-        } else {
+            // Lấy 6 tổ chức đã được phê duyệt
+            try {
+                var approvedOrganizations = organizationRepo.findByIsApprovedTrue().stream()
+                        .limit(6)
+                        .toList();
+                model.addAttribute("organizations", approvedOrganizations);
+            } catch (Exception e) {
+                System.err.println("[HOME] Error fetching organizations: " + e.getMessage());
+                model.addAttribute("organizations", java.util.List.of());
+            }
+
+            // Truyền danh sách eventId đã yêu thích để frontend biết đánh dấu
+            if (userDetails != null) {
+                try {
+                    Set<Integer> favIds = favoriteRepo.findByUser_Id(userDetails.getId())
+                            .stream()
+                            .map(ef -> ef.getEvent().getId())
+                            .collect(Collectors.toSet());
+                    model.addAttribute("favoritedIds", favIds);
+                } catch (Exception e) {
+                    System.err.println("[HOME] Error fetching favorites: " + e.getMessage());
+                    model.addAttribute("favoritedIds", Set.of());
+                }
+            } else {
+                model.addAttribute("favoritedIds", Set.of());
+            }
+        } catch (Exception e) {
+            System.err.println("[HOME] Error on homepage: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("approvedEvents", java.util.List.of());
+            model.addAttribute("organizations", java.util.List.of());
             model.addAttribute("favoritedIds", Set.of());
         }
         return "home/index";
@@ -81,6 +109,18 @@ public class HomeController {
             redirectAttrs.addFlashAttribute("error", "Không thể gửi tin nhắn. Vui lòng thử lại.");
         }
         return "redirect:/contact";
+    }
+
+    @PostMapping("/subscribe")
+    public String subscribeNewsletter(@RequestParam String email, RedirectAttributes redirectAttrs) {
+        SubscriptionService.SubscribeResult result = subscriptionService.subscribe(email);
+        switch (result) {
+            case CREATED -> redirectAttrs.addFlashAttribute("success", "Đăng ký nhận tin thành công!");
+            case REACTIVATED -> redirectAttrs.addFlashAttribute("success", "Email đã được kích hoạt lại cho danh sách nhận tin.");
+            case ALREADY_ACTIVE -> redirectAttrs.addFlashAttribute("success", "Email này đã có trong danh sách nhận tin.");
+            default -> redirectAttrs.addFlashAttribute("error", "Vui lòng nhập địa chỉ email hợp lệ.");
+        }
+        return "redirect:/";
     }
 
     @GetMapping("/donate")
