@@ -73,10 +73,12 @@ mvn clean package
 java -jar target/tinhnguyenxanh-1.0.0.jar
 ```
 
+**Port Flexibility**: The application automatically tries to use port 8080. If that port is already in use, it will automatically use 8081, 8082, etc., until it finds an available port.
+
 The application runs on:
 
-- `http://localhost:8080`
-- If `8080` is busy, the app automatically falls back to the next free port, such as `8081`
+- Default: `http://localhost:8080`
+- If 8080 is occupied: `http://localhost:8081`, `http://localhost:8082`, etc.
 - When the server finishes starting, it prints `Server running on http://localhost:xxxx` in the terminal
 
 ## 5) Main pages to test

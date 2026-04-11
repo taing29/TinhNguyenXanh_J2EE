@@ -4,6 +4,7 @@ import com.tinhnguyenxanh.dto.DonationDTO;
 import com.tinhnguyenxanh.entity.Donation;
 import com.tinhnguyenxanh.repository.DonationRepository;
 import com.tinhnguyenxanh.repository.EventFavoriteRepository;
+import com.tinhnguyenxanh.repository.OrganizationRepository;
 import com.tinhnguyenxanh.security.CustomUserDetails;
 import com.tinhnguyenxanh.service.EmailService;
 import com.tinhnguyenxanh.service.EventService;
@@ -30,26 +31,51 @@ public class HomeController {
     private final MomoService momoService;
     private final EmailService emailService;
     private final EventFavoriteRepository favoriteRepo;
+    private final OrganizationRepository organizationRepo;
 
     @GetMapping({"/", "/home"})
     public String index(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
-        var allApproved = eventService.getApprovedEvents();
-        // Lấy tối đa 8 sự kiện nổi bật (nhiều đăng ký nhất) cho slider
-        var featuredEvents = allApproved.stream()
-                .sorted(java.util.Comparator.comparingInt(
-                        com.tinhnguyenxanh.dto.EventDTO::getRegisteredCount).reversed())
-                .limit(3)
-                .toList();
-        model.addAttribute("approvedEvents", featuredEvents);
+        try {
+            var allApproved = eventService.getApprovedEvents();
+            // Lấy tối đa 3 sự kiện nổi bật (nhiều đăng ký nhất) cho homepage
+            var featuredEvents = allApproved.stream()
+                    .sorted(java.util.Comparator.comparingInt(
+                            com.tinhnguyenxanh.dto.EventDTO::getRegisteredCount).reversed())
+                    .limit(3)
+                    .toList();
+            model.addAttribute("approvedEvents", featuredEvents);
 
-        // Truyền danh sách eventId đã yêu thích để frontend biết đánh dấu
-        if (userDetails != null) {
-            Set<Integer> favIds = favoriteRepo.findByUser_Id(userDetails.getId())
-                    .stream()
-                    .map(ef -> ef.getEvent().getId())
-                    .collect(Collectors.toSet());
-            model.addAttribute("favoritedIds", favIds);
-        } else {
+            // Lấy 6 tổ chức đã được phê duyệt
+            try {
+                var approvedOrganizations = organizationRepo.findByIsApprovedTrue().stream()
+                        .limit(6)
+                        .toList();
+                model.addAttribute("organizations", approvedOrganizations);
+            } catch (Exception e) {
+                System.err.println("[HOME] Error fetching organizations: " + e.getMessage());
+                model.addAttribute("organizations", java.util.List.of());
+            }
+
+            // Truyền danh sách eventId đã yêu thích để frontend biết đánh dấu
+            if (userDetails != null) {
+                try {
+                    Set<Integer> favIds = favoriteRepo.findByUser_Id(userDetails.getId())
+                            .stream()
+                            .map(ef -> ef.getEvent().getId())
+                            .collect(Collectors.toSet());
+                    model.addAttribute("favoritedIds", favIds);
+                } catch (Exception e) {
+                    System.err.println("[HOME] Error fetching favorites: " + e.getMessage());
+                    model.addAttribute("favoritedIds", Set.of());
+                }
+            } else {
+                model.addAttribute("favoritedIds", Set.of());
+            }
+        } catch (Exception e) {
+            System.err.println("[HOME] Error on homepage: " + e.getMessage());
+            e.printStackTrace();
+            model.addAttribute("approvedEvents", java.util.List.of());
+            model.addAttribute("organizations", java.util.List.of());
             model.addAttribute("favoritedIds", Set.of());
         }
         return "home/index";

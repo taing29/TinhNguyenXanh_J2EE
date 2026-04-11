@@ -43,14 +43,27 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
         http
             .authenticationProvider(authenticationProvider())
+            .csrf(csrf -> csrf
+                .ignoringRequestMatchers("/auth/login", "/auth/register", "/payment/**", "/api/**", "/events/*/favorite/ajax")
+            )
+            .cors(cors -> cors
+                .disable()
+            )
+            .headers(headers -> headers
+                .frameOptions(frameOptions -> frameOptions.sameOrigin())
+            )
             .authorizeHttpRequests(auth -> auth
                 // Public pages
                 .requestMatchers("/", "/home", "/about", "/contact", "/search").permitAll()
+                .requestMatchers("/error", "/error/**").permitAll()
                 .requestMatchers("/events", "/events/{id}").permitAll()
                 .requestMatchers("/organizations", "/organizations/{id}").permitAll()
                 .requestMatchers("/auth/**").permitAll()
                 .requestMatchers("/payment/**").permitAll()
                 .requestMatchers("/css/**", "/js/**", "/images/**", "/uploads/**").permitAll()
+                // API endpoints - public
+                .requestMatchers("/api/v1/events/**", "/api/v1/organizations/**").permitAll()
+                .requestMatchers("/api/v1/auth/**").permitAll()
                 // Admin area
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 // Organizer area
@@ -76,6 +89,9 @@ public class SecurityConfig {
             )
             .sessionManagement(session -> session
                 .maximumSessions(1)
+            )
+            .exceptionHandling(exceptions -> exceptions
+                .accessDeniedPage("/auth/login")
             );
 
         return http.build();
