@@ -52,6 +52,9 @@ public class EventController {
             model.addAttribute("selectedCategory", category);
         }
         int total = all.size();
+        int totalParticipants = all.stream()
+            .mapToInt(com.tinhnguyenxanh.dto.EventDTO::getRegisteredCount)
+            .sum();
         int totalPages = Math.max(1, (int) Math.ceil((double) total / pageSize));
         page = Math.max(0, Math.min(page, totalPages - 1));
         var paged = all.stream().skip((long) page * pageSize).limit(pageSize).toList();
@@ -60,6 +63,7 @@ public class EventController {
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", totalPages);
         model.addAttribute("totalEvents", total);
+        model.addAttribute("totalParticipants", totalParticipants);
 
         // Truyền danh sách eventId đã yêu thích để hiển thị đúng icon
         if (userDetails != null) {
