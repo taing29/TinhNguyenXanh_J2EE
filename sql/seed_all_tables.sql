@@ -9,6 +9,7 @@ DELETE FROM event_favorites;
 DELETE FROM event_reports;
 DELETE FROM event_comments;
 DELETE FROM event_registrations;
+DELETE FROM newsletter_subscriptions;
 DELETE FROM reviews;
 DELETE FROM donations;
 DELETE FROM events;
@@ -337,6 +338,17 @@ VALUES
 (10,'Ly Thi Bich',     600000,  '0912000010', 'Ung ho workshop tai che sang tao',            0, NULL,        NOW() - INTERVAL 6 HOUR);
 
 -- =====================================================
+-- 12) NEWSLETTER SUBSCRIPTIONS
+-- =====================================================
+INSERT INTO newsletter_subscriptions
+(id, email, active, subscribed_at)
+VALUES
+(1, 'updates1@tinhnguyenxanh.vn', 1, NOW() - INTERVAL 10 DAY),
+(2, 'updates2@tinhnguyenxanh.vn', 1, NOW() - INTERVAL 8 DAY),
+(3, 'updates3@tinhnguyenxanh.vn', 1, NOW() - INTERVAL 6 DAY),
+(4, 'oldsubscriber@tinhnguyenxanh.vn', 0, NOW() - INTERVAL 12 DAY);
+
+-- =====================================================
 -- RESET AUTO INCREMENT
 -- =====================================================
 ALTER TABLE users               AUTO_INCREMENT = 16;
@@ -349,3 +361,4 @@ ALTER TABLE event_comments      AUTO_INCREMENT = 24;
 ALTER TABLE event_reports       AUTO_INCREMENT = 5;
 ALTER TABLE reviews             AUTO_INCREMENT = 8;
 ALTER TABLE donations           AUTO_INCREMENT = 11;
+ALTER TABLE newsletter_subscriptions AUTO_INCREMENT = 5;

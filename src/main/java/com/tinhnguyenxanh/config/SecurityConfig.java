@@ -44,7 +44,7 @@ public class SecurityConfig {
         http
             .authenticationProvider(authenticationProvider())
             .csrf(csrf -> csrf
-                .ignoringRequestMatchers("/auth/login", "/auth/register", "/payment/**", "/api/**", "/events/*/favorite/ajax")
+                .ignoringRequestMatchers("/auth/login", "/auth/register", "/subscribe", "/payment/**", "/api/**", "/events/*/favorite/ajax")
             )
             .cors(cors -> cors
                 .disable()

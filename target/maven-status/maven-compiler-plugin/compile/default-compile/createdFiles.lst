@@ -25,6 +25,7 @@ com\tinhnguyenxanh\service\EmailService.class
 com\tinhnguyenxanh\entity\EventRegistration.class
 com\tinhnguyenxanh\dto\EventRegistrationDTO$EventRegistrationDTOBuilder.class
 com\tinhnguyenxanh\entity\EventComment$EventCommentBuilder.class
+com\tinhnguyenxanh\controller\HomeController$1.class
 com\tinhnguyenxanh\repository\EventCategoryRepository.class
 com\tinhnguyenxanh\dto\OrganizationDTO$OrganizationDTOBuilder.class
 com\tinhnguyenxanh\controller\admin\AdminController.class

@@ -21,6 +21,7 @@ D:\0GitHub\0Final\TinhNguyenXanh_J2EE\src\main\java\com\tinhnguyenxanh\entity\Ev
 D:\0GitHub\0Final\TinhNguyenXanh_J2EE\src\main\java\com\tinhnguyenxanh\entity\EventFavorite.java
 D:\0GitHub\0Final\TinhNguyenXanh_J2EE\src\main\java\com\tinhnguyenxanh\entity\EventRegistration.java
 D:\0GitHub\0Final\TinhNguyenXanh_J2EE\src\main\java\com\tinhnguyenxanh\entity\EventReport.java
+D:\0GitHub\0Final\TinhNguyenXanh_J2EE\src\main\java\com\tinhnguyenxanh\entity\NewsletterSubscription.java
 D:\0GitHub\0Final\TinhNguyenXanh_J2EE\src\main\java\com\tinhnguyenxanh\entity\Organization.java
 D:\0GitHub\0Final\TinhNguyenXanh_J2EE\src\main\java\com\tinhnguyenxanh\entity\Review.java
 D:\0GitHub\0Final\TinhNguyenXanh_J2EE\src\main\java\com\tinhnguyenxanh\entity\User.java
@@ -33,6 +34,7 @@ D:\0GitHub\0Final\TinhNguyenXanh_J2EE\src\main\java\com\tinhnguyenxanh\repositor
 D:\0GitHub\0Final\TinhNguyenXanh_J2EE\src\main\java\com\tinhnguyenxanh\repository\EventRegistrationRepository.java
 D:\0GitHub\0Final\TinhNguyenXanh_J2EE\src\main\java\com\tinhnguyenxanh\repository\EventReportRepository.java
 D:\0GitHub\0Final\TinhNguyenXanh_J2EE\src\main\java\com\tinhnguyenxanh\repository\EventRepository.java
+D:\0GitHub\0Final\TinhNguyenXanh_J2EE\src\main\java\com\tinhnguyenxanh\repository\NewsletterSubscriptionRepository.java
 D:\0GitHub\0Final\TinhNguyenXanh_J2EE\src\main\java\com\tinhnguyenxanh\repository\OrganizationRepository.java
 D:\0GitHub\0Final\TinhNguyenXanh_J2EE\src\main\java\com\tinhnguyenxanh\repository\ReviewRepository.java
 D:\0GitHub\0Final\TinhNguyenXanh_J2EE\src\main\java\com\tinhnguyenxanh\repository\UserRepository.java
@@ -45,5 +47,6 @@ D:\0GitHub\0Final\TinhNguyenXanh_J2EE\src\main\java\com\tinhnguyenxanh\service\E
 D:\0GitHub\0Final\TinhNguyenXanh_J2EE\src\main\java\com\tinhnguyenxanh\service\FileUploadService.java
 D:\0GitHub\0Final\TinhNguyenXanh_J2EE\src\main\java\com\tinhnguyenxanh\service\MomoService.java
 D:\0GitHub\0Final\TinhNguyenXanh_J2EE\src\main\java\com\tinhnguyenxanh\service\OrganizationService.java
+D:\0GitHub\0Final\TinhNguyenXanh_J2EE\src\main\java\com\tinhnguyenxanh\service\SubscriptionService.java
 D:\0GitHub\0Final\TinhNguyenXanh_J2EE\src\main\java\com\tinhnguyenxanh\service\UserService.java
 D:\0GitHub\0Final\TinhNguyenXanh_J2EE\src\main\java\com\tinhnguyenxanh\TinhNguyenXanhApplication.java

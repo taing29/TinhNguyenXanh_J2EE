@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head th:replace="~{shared/admin-layout :: head('Quản lý nhận tin')}"></head>
+<body>
+<div th:replace="~{shared/admin-layout :: sidebar('subscriptions')}"></div>
+<div class="main-content">
+  <div class="content-area">
+    <h3 class="fw-bold mb-4"><i class="bi bi-envelope-paper-heart me-2"></i>Quản lý nhận tin</h3>
+    <div th:replace="~{shared/admin-layout :: flash}"></div>
+
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <div class="card stat-card p-3 text-center">
+          <h4 class="fw-bold mb-1" th:text="${totalSubscriptions}">0</h4>
+          <div class="text-muted">Tổng đăng ký</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card stat-card p-3 text-center">
+          <h4 class="fw-bold mb-1" th:text="${activeSubscriptions}">0</h4>
+          <div class="text-muted">Đang hoạt động</div>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <div class="card stat-card p-3 text-center">
+          <h4 class="fw-bold mb-1" th:text="${totalSubscriptions - activeSubscriptions}">0</h4>
+          <div class="text-muted">Đã tắt</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card border-0 shadow-sm">
+      <div class="card-body p-0">
+        <table class="table table-hover mb-0 align-middle">
+          <thead class="table-dark">
+            <tr>
+              <th>#</th><th>Email</th><th>Trạng thái</th><th>Ngày đăng ký</th><th>Hành động</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr th:each="subscription,iter : ${subscriptions}">
+              <td th:text="${iter.count}"></td>
+              <td class="fw-semibold" th:text="${subscription.email}"></td>
+              <td>
+                <span class="badge" th:classappend="${subscription.active} ? 'bg-success' : 'bg-secondary'" th:text="${subscription.active ? 'Đang hoạt động' : 'Đã tắt'}"></span>
+              </td>
+              <td th:text="${#temporals.format(subscription.subscribedAt, 'dd/MM/yyyy HH:mm')}"></td>
+              <td>
+                <div class="btn-group btn-group-sm">
+                  <form th:if="${subscription.active}" th:action="@{/admin/subscriptions/{id}/deactivate(id=${subscription.id})}" method="post" class="d-inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn btn-warning btn-sm" title="Tắt đăng ký"><i class="bi bi-pause-circle"></i></button>
+                  </form>
+                  <form th:if="${!subscription.active}" th:action="@{/admin/subscriptions/{id}/reactivate(id=${subscription.id})}" method="post" class="d-inline">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn btn-success btn-sm" title="Kích hoạt lại"><i class="bi bi-play-circle"></i></button>
+                  </form>
+                  <form th:action="@{/admin/subscriptions/{id}/delete(id=${subscription.id})}" method="post" class="d-inline" onsubmit="return confirm('Xóa subscription này?')">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn btn-danger btn-sm" title="Xóa"><i class="bi bi-trash"></i></button>
+                  </form>
+                </div>
+              </td>
+            </tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+    <p th:if="${#lists.isEmpty(subscriptions)}" class="text-center text-muted py-4">Chưa có subscription nào.</p>
+  </div>
+</div>
+<th:block th:replace="~{shared/admin-layout :: scripts}"></th:block>
+</body>
+</html>

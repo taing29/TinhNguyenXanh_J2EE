@@ -9,6 +9,7 @@ import com.tinhnguyenxanh.security.CustomUserDetails;
 import com.tinhnguyenxanh.service.EmailService;
 import com.tinhnguyenxanh.service.EventService;
 import com.tinhnguyenxanh.service.MomoService;
+import com.tinhnguyenxanh.service.SubscriptionService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.annotation.AuthenticationPrincipal;
@@ -32,6 +33,7 @@ public class HomeController {
     private final EmailService emailService;
     private final EventFavoriteRepository favoriteRepo;
     private final OrganizationRepository organizationRepo;
+    private final SubscriptionService subscriptionService;
 
     @GetMapping({"/", "/home"})
     public String index(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
@@ -107,6 +109,18 @@ public class HomeController {
             redirectAttrs.addFlashAttribute("error", "Không thể gửi tin nhắn. Vui lòng thử lại.");
         }
         return "redirect:/contact";
+    }
+
+    @PostMapping("/subscribe")
+    public String subscribeNewsletter(@RequestParam String email, RedirectAttributes redirectAttrs) {
+        SubscriptionService.SubscribeResult result = subscriptionService.subscribe(email);
+        switch (result) {
+            case CREATED -> redirectAttrs.addFlashAttribute("success", "Đăng ký nhận tin thành công!");
+            case REACTIVATED -> redirectAttrs.addFlashAttribute("success", "Email đã được kích hoạt lại cho danh sách nhận tin.");
+            case ALREADY_ACTIVE -> redirectAttrs.addFlashAttribute("success", "Email này đã có trong danh sách nhận tin.");
+            default -> redirectAttrs.addFlashAttribute("error", "Vui lòng nhập địa chỉ email hợp lệ.");
+        }
+        return "redirect:/";
     }
 
     @GetMapping("/donate")

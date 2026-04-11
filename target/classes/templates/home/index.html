@@ -723,7 +723,7 @@
       <h1 class="hero-title">
         Tình Nguyện Xanh
         <br />
-        <span class="gradient-text">Chọn Tương Lai Xanh</span>
+        <span class="gradient-text">Cùng Nhau Tạo Xanh</span>
       </h1>
       <p class="hero-subtitle">
         Nền tảng kết nối tình nguyện viên với các tổ chức phi lợi nhuận.
@@ -987,7 +987,7 @@
         <h2>Cập Nhật Thông Tin Mới Nhất</h2>
         <p>Nhận thông báo về các sự kiện mới, cơ hội tình nguyện và mẹo hữu ích</p>
 
-        <form class="newsletter-form" id="newsletterForm">
+        <form class="newsletter-form" action="/subscribe" method="post">
           <input
             type="email"
             name="email"
@@ -998,7 +998,6 @@
           </button>
         </form>
 
-        <p class="subscribe-message" id="subscribeMessage" style="display:none;"></p>
       </div>
     </div>
   </section>
@@ -1034,30 +1033,9 @@
 <!-- Bootstrap bundle TRƯỚC, script của trang SAU -->
 <th:block th:replace="~{shared/layout :: scripts}"></th:block>
 
-<!-- Newsletter & Favorite Functions -->
+<!-- Favorite Functions -->
 <script th:inline="javascript">
   /*<![CDATA[*/
-  // ═══════════════════════════════════════════════════════════════════════
-  // Newsletter Subscription
-  // ═══════════════════════════════════════════════════════════════════════
-  document.getElementById('newsletterForm').addEventListener('submit', function(e) {
-    e.preventDefault();
-    var email = document.querySelector('[name="email"]').value;
-    if (email) {
-      showSubcribeMsg('✅ Cảm ơn bạn đã đăng ký! Vui lòng kiểm tra email.');
-      document.getElementById('newsletterForm').reset();
-    }
-  });
-
-  function showSubcribeMsg(msg) {
-    var msgEl = document.getElementById('subscribeMessage');
-    msgEl.textContent = msg;
-    msgEl.style.display = 'block';
-    setTimeout(function() {
-      msgEl.style.display = 'none';
-    }, 4000);
-  }
-
   // ═══════════════════════════════════════════════════════════════════════
   // Favorite Toggle
   // ═══════════════════════════════════════════════════════════════════════
