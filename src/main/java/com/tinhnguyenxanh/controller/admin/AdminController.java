@@ -254,18 +254,42 @@ public class AdminController {
 
     // ===== REPORTS =====
     @GetMapping("/reports")
-    public String adminReports(Model model) {
-        model.addAttribute("reports", reportRepo.findPendingWithDetails());
+    public String adminReports(@RequestParam(defaultValue = "all") String status, Model model) {
+        List<EventReport> reports = reportRepo.findAllWithDetails();
+        List<EventReport> filteredReports = reports.stream()
+                .filter(r -> "all".equalsIgnoreCase(status) || r.getStatus().equalsIgnoreCase(status))
+                .toList();
+
+        model.addAttribute("reports", filteredReports);
+        model.addAttribute("selectedStatus", status);
+        model.addAttribute("totalReports", reports.size());
+        model.addAttribute("pendingReports", reports.stream().filter(r -> "Pending".equalsIgnoreCase(r.getStatus())).count());
+        model.addAttribute("approvedReports", reports.stream().filter(r -> "Approved".equalsIgnoreCase(r.getStatus())).count());
+        model.addAttribute("rejectedReports", reports.stream().filter(r -> "Rejected".equalsIgnoreCase(r.getStatus())).count());
         return "admin/reports";
     }
 
     @PostMapping("/reports/{id}/dismiss")
     public String dismissReport(@PathVariable Integer id, RedirectAttributes redirectAttrs) {
-        reportRepo.findById(id).ifPresent(r -> {
-            r.setStatus("Dismissed");
-            reportRepo.save(r);
-        });
-        redirectAttrs.addFlashAttribute("success", "Đã bỏ qua báo cáo");
+        boolean ok = eventService.rejectReport(id);
+        redirectAttrs.addFlashAttribute(ok ? "success" : "error",
+                ok ? "Đã từ chối báo cáo" : "Không thể từ chối báo cáo");
+        return "redirect:/admin/reports";
+    }
+
+    @PostMapping("/reports/{id}/approve")
+    public String approveReport(@PathVariable Integer id, RedirectAttributes redirectAttrs) {
+        boolean ok = eventService.approveReport(id);
+        redirectAttrs.addFlashAttribute(ok ? "success" : "error",
+                ok ? "Đã phê duyệt báo cáo" : "Không thể phê duyệt báo cáo");
+        return "redirect:/admin/reports";
+    }
+
+    @PostMapping("/reports/{id}/reject")
+    public String rejectReport(@PathVariable Integer id, RedirectAttributes redirectAttrs) {
+        boolean ok = eventService.rejectReport(id);
+        redirectAttrs.addFlashAttribute(ok ? "success" : "error",
+                ok ? "Đã từ chối báo cáo" : "Không thể từ chối báo cáo");
         return "redirect:/admin/reports";
     }
 }

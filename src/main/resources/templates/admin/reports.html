@@ -5,34 +5,100 @@
 <div th:replace="~{shared/admin-layout :: sidebar('reports')}"></div>
 <div class="main-content">
   <div class="content-area">
-    <h3 class="fw-bold mb-4"><i class="bi bi-flag me-2"></i>Báo cáo sự kiện</h3>
+    <h3 class="fw-bold mb-2"><i class="bi bi-flag me-2"></i>Báo cáo sự kiện</h3>
+    <p class="text-muted mb-4">Xem xét và xử lý báo cáo vi phạm sự kiện.</p>
     <div th:replace="~{shared/admin-layout :: flash}"></div>
+    <div class="row g-3 mb-4">
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="card stat-card p-4 text-center">
+          <p class="fw-semibold mb-1">Tổng báo cáo</p>
+          <p class="h4 mb-0" th:text="${totalReports}">0</p>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="card stat-card p-4 text-center">
+          <p class="fw-semibold mb-1">Chờ xử lý</p>
+          <p class="h4 mb-0" th:text="${pendingReports}">0</p>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="card stat-card p-4 text-center">
+          <p class="fw-semibold mb-1">Đã phê duyệt</p>
+          <p class="h4 mb-0" th:text="${approvedReports}">0</p>
+        </div>
+      </div>
+      <div class="col-12 col-md-6 col-xl-3">
+        <div class="card stat-card p-4 text-center">
+          <p class="fw-semibold mb-1">Đã từ chối</p>
+          <p class="h4 mb-0" th:text="${rejectedReports}">0</p>
+        </div>
+      </div>
+    </div>
+
+    <form class="mb-3" method="get" th:action="@{/admin/reports}">
+      <div class="dropdown d-inline-block">
+        <button class="btn btn-outline-dark dropdown-toggle" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+          <span th:switch="${selectedStatus}">
+            <span th:case="'Pending'">Chờ xử lý</span>
+            <span th:case="'Approved'">Đã phê duyệt</span>
+            <span th:case="'Rejected'">Đã từ chối</span>
+            <span th:case="*">Tất cả trạng thái</span>
+          </span>
+        </button>
+        <ul class="dropdown-menu">
+          <li><button type="submit" name="status" value="all" class="dropdown-item">Tất cả trạng thái</button></li>
+          <li><button type="submit" name="status" value="Pending" class="dropdown-item">Chờ xử lý</button></li>
+          <li><button type="submit" name="status" value="Approved" class="dropdown-item">Đã phê duyệt</button></li>
+          <li><button type="submit" name="status" value="Rejected" class="dropdown-item">Đã từ chối</button></li>
+        </ul>
+      </div>
+    </form>
+
     <div class="card border-0 shadow-sm">
       <div class="table-responsive">
-        <table class="table table-hover mb-0">
+        <table class="table table-hover mb-0 align-middle">
           <thead class="table-dark">
-            <tr><th>#</th><th>Sự kiện</th><th>Người báo cáo</th><th>Lý do</th><th>Thời gian</th><th>Trạng thái</th><th></th></tr>
+            <tr>
+              <th>Sự kiện</th>
+              <th>Lý do</th>
+              <th>Trạng thái</th>
+              <th>Ẩn</th>
+              <th>Thời gian</th>
+              <th class="text-end">Thao tác</th>
+            </tr>
           </thead>
           <tbody>
-            <tr th:each="r,iter : ${reports}">
-              <td th:text="${iter.count}"></td>
-              <td><a th:href="@{/events/{id}(id=${r.event.id})}" th:text="${r.event.title}"></a></td>
-              <td th:text="${r.user.fullName}"></td>
-              <td th:text="${r.reportReason}"></td>
-              <td th:text="${#temporals.format(r.reportDate,'dd/MM/yyyy HH:mm')}"></td>
-              <td><span class="badge bg-warning text-dark" th:text="${r.status}"></span></td>
+            <tr th:each="r : ${reports}">
+              <td class="fw-semibold">
+                <a th:href="@{/events/{id}(id=${r.event.id})}" th:text="${r.event.title}"></a>
+              </td>
+              <td class="small text-muted" th:text="${r.reportReason}"></td>
               <td>
-                <form th:action="@{/admin/reports/{id}/dismiss(id=${r.id})}" method="post">
-                  <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-                  <button type="submit" class="btn btn-sm btn-outline-secondary">Dismiss</button>
-                </form>
+                <span class="badge"
+                      th:classappend="${r.status == 'Pending'} ? 'text-bg-warning' : (${r.status == 'Approved'} ? 'text-bg-success' : 'text-bg-danger')"
+                      th:text="${r.status}"></span>
+              </td>
+              <td th:text="${r.event.isHidden ? 'Yes' : 'No'}"></td>
+              <td class="small text-muted" th:text="${#temporals.format(r.reportDate,'dd/MM/yyyy HH:mm')}"></td>
+              <td class="text-end">
+                <div th:if="${r.status == 'Pending'}" class="d-inline-flex gap-2">
+                  <form th:action="@{/admin/reports/{id}/approve(id=${r.id})}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn btn-sm btn-success">Approve</button>
+                  </form>
+                  <form th:action="@{/admin/reports/{id}/reject(id=${r.id})}" method="post">
+                    <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+                    <button type="submit" class="btn btn-sm btn-danger">Reject</button>
+                  </form>
+                </div>
+                <span th:if="${r.status != 'Pending'}" class="small text-muted">--</span>
               </td>
             </tr>
           </tbody>
         </table>
       </div>
     </div>
-    <p th:if="${#lists.isEmpty(reports)}" class="text-center text-muted mt-4">Không có báo cáo đang chờ xử lý.</p>
+    <p th:if="${#lists.isEmpty(reports)}" class="text-center text-muted mt-4">Không có báo cáo nào.</p>
   </div>
 </div>
 <th:block th:replace="~{shared/admin-layout :: scripts}"></th:block>
