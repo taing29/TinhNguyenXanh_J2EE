@@ -1,5 +1,6 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{shared/layout :: head('Chỉnh sửa hồ sơ')}">
   <style>
     .avatar-preview { width:90px;height:90px;border-radius:50%;object-fit:cover;border:3px solid #e8f5e9; }
@@ -13,9 +14,13 @@
 <div th:replace="~{shared/layout :: flash}"></div>
 
 <main>
-  <div class="container py-5">
-    <div class="row justify-content-center">
-      <div class="col-lg-7">
+  <div class="container profile-page">
+    <div class="row g-4 align-items-start">
+      <div class="col-lg-4">
+        <div th:replace="~{shared/volunteer-profile-shell :: shell(${user}, ${volunteer}, ${totalRegs}, ${confirmedRegs}, 'profile')}"></div>
+      </div>
+
+      <div class="col-lg-8">
         <div class="d-flex align-items-center mb-4">
           <a th:href="@{/auth/profile}" class="btn btn-outline-secondary btn-sm me-3">
             <i class="bi bi-arrow-left"></i>

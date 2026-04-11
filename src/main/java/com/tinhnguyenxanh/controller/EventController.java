@@ -278,17 +278,11 @@ public class EventController {
 
     @GetMapping("/my-registrations")
     public String myRegistrations(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
-        if (userDetails == null) return "redirect:/auth/login";
-        volunteerRepo.findByUser_Id(userDetails.getId()).ifPresent(v ->
-                model.addAttribute("registrations", registrationService.getByVolunteerId(v.getId()))
-        );
-        return "event/my-registrations";
+        return "redirect:/auth/my-registrations";
     }
 
     @GetMapping("/my-favorites")
     public String myFavorites(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
-        if (userDetails == null) return "redirect:/auth/login";
-        model.addAttribute("favorites", favoriteRepo.findByUser_Id(userDetails.getId()));
-        return "event/my-favorites";
+        return "redirect:/auth/my-favorites";
     }
 }
