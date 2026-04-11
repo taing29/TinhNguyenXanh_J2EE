@@ -5,65 +5,162 @@
 <div th:replace="~{shared/organizer-layout :: sidebar('dashboard')}"></div>
 <div class="main-content">
   <div class="content-area">
-    <div class="d-flex justify-content-between align-items-start mb-4">
-      <div>
-        <h3 class="fw-bold mb-1">Xin chào, <span th:text="${org.name}">Tổ chức</span> 👋</h3>
-        <p class="text-muted mb-0">Quản lý các sự kiện của bạn</p>
-      </div>
-
-    </div>
     <div th:replace="~{shared/organizer-layout :: flash}"></div>
 
-    <div class="row g-4 mb-5">
-      <div class="col-md-4">
-        <div class="card stat-card p-4 text-center">
-          <i class="bi bi-calendar-event display-5 text-primary mb-2"></i>
-          <h3 class="fw-bold" th:text="${totalEvents}">0</h3>
-          <p class="text-muted mb-0">Tổng sự kiện</p>
+    <div class="rounded-4 p-4 p-lg-5 mb-4 text-white position-relative overflow-hidden"
+         style="background: linear-gradient(125deg, #14532d 0%, #15803d 42%, #0f766e 100%); box-shadow: 0 24px 60px rgba(21, 128, 61, 0.28);">
+      <div class="position-absolute top-0 end-0 opacity-25" style="font-size: 8rem; line-height: 1; transform: translate(12%, -8%);">🌿</div>
+      <div class="position-relative" style="max-width: 42rem;">
+        <p class="text-white-50 small text-uppercase fw-bold mb-2 letter-spacing">Khu vực ban tổ chức</p>
+        <h1 class="h3 fw-bold mb-2">Xin chào, <span th:text="${org.name}">Tổ chức</span></h1>
+        <p class="mb-0 opacity-90">Theo dõi sự kiện, duyệt tình nguyện viên và cập nhật thông tin tổ chức tại một nơi.</p>
+      </div>
+    </div>
+
+    <div class="row g-3 g-xl-4 mb-4">
+      <div class="col-6 col-lg-3">
+        <div class="stat-card p-4 h-100">
+          <div class="d-flex align-items-start justify-content-between gap-2">
+            <div>
+              <p class="text-muted small fw-semibold mb-1">Tổng sự kiện</p>
+              <p class="h3 fw-bold mb-0 text-dark" th:text="${totalEvents}">0</p>
+            </div>
+            <span class="rounded-circle d-inline-flex align-items-center justify-content-center"
+                  style="width:2.75rem;height:2.75rem;background:rgba(21,128,61,.12);color:#15803d;">
+              <i class="bi bi-calendar3 fs-5"></i>
+            </span>
+          </div>
         </div>
       </div>
-      <div class="col-md-4">
-        <div class="card stat-card p-4 text-center">
-          <i class="bi bi-hourglass-split display-5 text-warning mb-2"></i>
-          <h3 class="fw-bold" th:text="${pendingEvents}">0</h3>
-          <p class="text-muted mb-0">Đang chờ duyệt</p>
+      <div class="col-6 col-lg-3">
+        <div class="stat-card p-4 h-100">
+          <div class="d-flex align-items-start justify-content-between gap-2">
+            <div>
+              <p class="text-muted small fw-semibold mb-1">Chờ admin duyệt SK</p>
+              <p class="h3 fw-bold mb-0 text-warning" th:text="${pendingEvents}">0</p>
+            </div>
+            <span class="rounded-circle d-inline-flex align-items-center justify-content-center"
+                  style="width:2.75rem;height:2.75rem;background:rgba(245,158,11,.15);color:#b45309;">
+              <i class="bi bi-hourglass-split fs-5"></i>
+            </span>
+          </div>
         </div>
       </div>
-      <div class="col-md-4">
-        <div class="card stat-card p-4 text-center">
-          <i class="bi bi-check-circle display-5 text-success mb-2"></i>
-          <h3 class="fw-bold" th:text="${approvedEvents}">0</h3>
-          <p class="text-muted mb-0">Đã được duyệt</p>
+      <div class="col-6 col-lg-3">
+        <div class="stat-card p-4 h-100">
+          <div class="d-flex align-items-start justify-content-between gap-2">
+            <div>
+              <p class="text-muted small fw-semibold mb-1">Sự kiện đã duyệt</p>
+              <p class="h3 fw-bold mb-0 text-success" th:text="${approvedEvents}">0</p>
+            </div>
+            <span class="rounded-circle d-inline-flex align-items-center justify-content-center"
+                  style="width:2.75rem;height:2.75rem;background:rgba(34,197,94,.15);color:#15803d;">
+              <i class="bi bi-patch-check fs-5"></i>
+            </span>
+          </div>
+        </div>
+      </div>
+      <div class="col-6 col-lg-3">
+        <div class="stat-card p-4 h-100 border border-warning border-opacity-25"
+             style="background: linear-gradient(135deg, #fffbeb, #ffffff);">
+          <div class="d-flex align-items-start justify-content-between gap-2">
+            <div>
+              <p class="text-muted small fw-semibold mb-1">TNV chờ bạn duyệt</p>
+              <p class="h3 fw-bold mb-0" style="color:#b45309;" th:text="${pendingVolunteerRegs}">0</p>
+            </div>
+            <span class="rounded-circle d-inline-flex align-items-center justify-content-center"
+                  style="width:2.75rem;height:2.75rem;background:rgba(245,158,11,.2);color:#b45309;">
+              <i class="bi bi-people fs-5"></i>
+            </span>
+          </div>
         </div>
       </div>
     </div>
 
-    <div class="d-flex justify-content-between align-items-center mb-3">
-      <h5 class="fw-bold">Sự kiện gần đây</h5>
-      <a th:href="@{/organizer/events/create}" class="btn btn-primary btn-sm">
-        <i class="bi bi-plus-lg me-1"></i>Tạo sự kiện mới
+    <div class="row g-3 mb-4">
+      <div class="col-md-4">
+        <a th:href="@{/organizer/pending-volunteers}" class="text-decoration-none d-block h-100">
+          <div class="stat-card p-4 h-100 d-flex align-items-center gap-3"
+               style="transition: transform .2s ease, box-shadow .2s ease;">
+            <span class="rounded-3 d-inline-flex align-items-center justify-content-center text-white"
+                  style="width:3rem;height:3rem;background:linear-gradient(135deg,#ea580c,#f59e0b);">
+              <i class="bi bi-person-check fs-4"></i>
+            </span>
+            <div>
+              <div class="fw-bold text-dark">Duyệt tình nguyện viên</div>
+              <small class="text-muted">Xem &amp; xử lý đăng ký chờ</small>
+            </div>
+            <i class="bi bi-chevron-right ms-auto text-muted"></i>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a th:href="@{/organizer/volunteers/export}" class="text-decoration-none d-block h-100">
+          <div class="stat-card p-4 h-100 d-flex align-items-center gap-3">
+            <span class="rounded-3 d-inline-flex align-items-center justify-content-center text-white"
+                  style="width:3rem;height:3rem;background:linear-gradient(135deg,#0d9488,#14b8a6);">
+              <i class="bi bi-file-earmark-arrow-down fs-4"></i>
+            </span>
+            <div>
+              <div class="fw-bold text-dark">Xuất Excel</div>
+              <small class="text-muted">Danh sách TNV (theo tổ chức)</small>
+            </div>
+            <i class="bi bi-chevron-right ms-auto text-muted"></i>
+          </div>
+        </a>
+      </div>
+      <div class="col-md-4">
+        <a th:href="@{/organizer/events/create}" class="text-decoration-none d-block h-100">
+          <div class="stat-card p-4 h-100 d-flex align-items-center gap-3">
+            <span class="rounded-3 d-inline-flex align-items-center justify-content-center text-white"
+                  style="width:3rem;height:3rem;background:linear-gradient(135deg,#15803d,#22c55e);">
+              <i class="bi bi-plus-lg fs-4"></i>
+            </span>
+            <div>
+              <div class="fw-bold text-dark">Tạo sự kiện mới</div>
+              <small class="text-muted">Gửi duyệt lên admin</small>
+            </div>
+            <i class="bi bi-chevron-right ms-auto text-muted"></i>
+          </div>
+        </a>
+      </div>
+    </div>
+
+    <div class="d-flex flex-wrap justify-content-between align-items-center gap-3 mb-3">
+      <div>
+        <h2 class="h5 fw-bold mb-1 text-dark">Sự kiện gần đây</h2>
+        <p class="text-muted small mb-0">Sắp xếp theo thời gian bắt đầu (mới nhất trước)</p>
+      </div>
+      <a th:href="@{/organizer/events}" class="btn btn-outline-secondary btn-sm fw-semibold rounded-pill">
+        Xem tất cả <i class="bi bi-arrow-right ms-1"></i>
       </a>
     </div>
-    <div class="card border-0 shadow-sm">
-      <div class="card-body p-0">
-        <table class="table table-hover mb-0">
+
+    <div class="stat-card overflow-hidden">
+      <div class="table-responsive">
+        <table class="table table-hover align-middle mb-0">
           <thead class="table-light">
-            <tr><th>Tên sự kiện</th><th>Bắt đầu</th><th>Trạng thái</th><th>Hành động</th></tr>
+            <tr class="small text-muted text-uppercase">
+              <th class="ps-4">Tên sự kiện</th>
+              <th>Bắt đầu</th>
+              <th>Trạng thái</th>
+              <th class="text-end pe-4">Thao tác</th>
+            </tr>
           </thead>
           <tbody>
             <tr th:each="event : ${events}">
-              <td th:text="${event.title}"></td>
-              <td th:text="${#temporals.format(event.startTime,'dd/MM/yyyy')}"></td>
+              <td class="ps-4 fw-semibold text-dark" th:text="${event.title}"></td>
+              <td th:text="${#temporals.format(event.startTime,'dd/MM/yyyy HH:mm')}"></td>
               <td>
-                <span class="badge"
-                      th:classappend="${event.status == 'approved'} ? 'bg-success' : (${event.status == 'pending'} ? 'bg-warning text-dark' : 'bg-secondary')"
+                <span class="badge rounded-pill px-3 py-2"
+                      th:classappend="${event.status == 'approved'} ? ' text-bg-success' : (${event.status == 'pending'} ? ' text-bg-warning' : ' text-bg-secondary')"
                       th:text="${event.status}"></span>
               </td>
-              <td>
-                <a th:href="@{/organizer/events/{id}/volunteers(id=${event.id})}" class="btn btn-outline-primary btn-sm">
+              <td class="text-end pe-4">
+                <a th:href="@{/organizer/events/{id}/volunteers(id=${event.id})}" class="btn btn-sm btn-outline-success rounded-pill me-1">
                   <i class="bi bi-people me-1"></i>TNV
                 </a>
-                <a th:href="@{/organizer/events/{id}/edit(id=${event.id})}" class="btn btn-outline-secondary btn-sm">
+                <a th:href="@{/organizer/events/{id}/edit(id=${event.id})}" class="btn btn-sm btn-outline-secondary rounded-pill">
                   <i class="bi bi-pencil"></i>
                 </a>
               </td>
@@ -71,8 +168,10 @@
           </tbody>
         </table>
       </div>
+      <p th:if="${#lists.isEmpty(events)}" class="text-center text-muted py-5 mb-0">
+        Bạn chưa có sự kiện nào. Hãy <a th:href="@{/organizer/events/create}">tạo sự kiện đầu tiên</a>.
+      </p>
     </div>
-    <p th:if="${#lists.isEmpty(events)}" class="text-center text-muted py-4">Bạn chưa có sự kiện nào.</p>
   </div>
 </div>
 <th:block th:replace="~{shared/organizer-layout :: scripts}"></th:block>

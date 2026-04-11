@@ -54,7 +54,7 @@ public class SecurityConfig {
             )
             .authorizeHttpRequests(auth -> auth
                 // Public pages
-                .requestMatchers("/", "/home", "/about", "/contact", "/search").permitAll()
+                .requestMatchers("/", "/home", "/about", "/contact", "/search", "/donate").permitAll()
                 .requestMatchers("/error", "/error/**").permitAll()
                 .requestMatchers("/events", "/events/{id}").permitAll()
                 .requestMatchers("/organizations", "/organizations/{id}").permitAll()
@@ -64,6 +64,7 @@ public class SecurityConfig {
                 // API endpoints - public
                 .requestMatchers("/api/v1/events/**", "/api/v1/organizations/**").permitAll()
                 .requestMatchers("/api/v1/auth/**").permitAll()
+                .requestMatchers("/api/v1/payments/**").permitAll()
                 // Admin area
                 .requestMatchers("/admin/**").hasRole("ADMIN")
                 // Organizer area

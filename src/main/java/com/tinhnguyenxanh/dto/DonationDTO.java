@@ -14,8 +14,11 @@ public class DonationDTO {
     @Min(value = 10000, message = "Số tiền tối thiểu là 10,000 VNĐ")
     private BigDecimal amount;
 
-    @NotBlank(message = "Số điện thoại không được để trống")
+    /** Để trống nếu không muốn cung cấp (một số kênh không bắt buộc). */
     private String phoneNumber;
 
     private String message;
+
+    /** momo | bank */
+    private String paymentMethod = "momo";
 }

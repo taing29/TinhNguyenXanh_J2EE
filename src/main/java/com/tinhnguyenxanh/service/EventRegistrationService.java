@@ -60,6 +60,29 @@ public class EventRegistrationService {
         return registrationRepo.findById(id);
     }
 
+    /** Đăng ký thuộc sự kiện của tổ chức này (dùng khi duyệt/từ chối). */
+    public boolean belongsToOrganization(Integer registrationId, Integer organizationId) {
+        return registrationRepo.findByIdWithEventAndOrganization(registrationId)
+                .map(r -> r.getEvent().getOrganization().getId().equals(organizationId))
+                .orElse(false);
+    }
+
+    public List<EventRegistration> getPendingByOrganization(Integer organizationId) {
+        return registrationRepo.findByOrganizationIdAndStatusIgnoreCase(organizationId, "Pending");
+    }
+
+    public List<EventRegistration> getVolunteerHistoryForOrganization(Integer volunteerId, Integer organizationId) {
+        return registrationRepo.findByVolunteerIdAndOrganizationId(volunteerId, organizationId);
+    }
+
+    public long countPendingByOrganization(Integer organizationId) {
+        return registrationRepo.countPendingByOrganizationId(organizationId);
+    }
+
+    public boolean volunteerLinkedToOrganization(Integer volunteerId, Integer organizationId) {
+        return registrationRepo.existsVolunteerInOrganization(volunteerId, organizationId);
+    }
+
     @Transactional
     public boolean approve(Integer id) {
         EventRegistration reg = registrationRepo.findById(id).orElse(null);

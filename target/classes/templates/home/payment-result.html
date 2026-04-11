@@ -4,21 +4,70 @@
 <body>
 <nav th:replace="~{shared/layout :: navbar('')}"></nav>
 <main>
-  <div class="container py-5 text-center">
-    <div th:if="${success}">
-      <i class="bi bi-check-circle-fill text-success" style="font-size:5rem"></i>
-      <h2 class="fw-bold text-success mt-3">Quyên góp thành công! 🎉</h2>
-      <p class="text-muted">Cảm ơn bạn đã ủng hộ Tình Nguyện Xanh.</p>
-      <p class="text-muted small">Mã giao dịch: <code th:text="${orderId}"></code></p>
+  <div class="container py-5" style="max-width: 720px;">
+    <div th:if="${displayStatus == 'success'}"
+         class="alert alert-success border-0 shadow-sm rounded-4 p-4 text-center mb-4">
+      <i class="bi bi-check-circle-fill text-success" style="font-size: 3rem;"></i>
+      <h1 class="h4 fw-bold mt-3 mb-2">Thanh toán thành công</h1>
+      <p class="text-muted mb-0">Cảm ơn bạn đã đồng hành cùng Tình Nguyện Xanh.</p>
     </div>
-    <div th:unless="${success}">
-      <i class="bi bi-x-circle-fill text-danger" style="font-size:5rem"></i>
-      <h2 class="fw-bold text-danger mt-3">Thanh toán thất bại</h2>
-      <p class="text-muted">Giao dịch không thành công. Vui lòng thử lại.</p>
+
+    <div th:if="${displayStatus == 'failed'}"
+         class="alert alert-danger border-0 shadow-sm rounded-4 p-4 text-center mb-4">
+      <i class="bi bi-x-circle-fill text-danger" style="font-size: 3rem;"></i>
+      <h1 class="h4 fw-bold mt-3 mb-2">Thanh toán thất bại hoặc đã hủy</h1>
+      <p class="text-muted mb-0">Giao dịch không hoàn tất. Bạn có thể thử lại khi sẵn sàng.</p>
     </div>
-    <div class="mt-4">
-      <a th:href="@{/}" class="btn btn-success me-2">Về trang chủ</a>
-      <a th:href="@{/donate}" class="btn btn-outline-success">Quyên góp lại</a>
+
+    <div th:if="${displayStatus == 'pending'}"
+         class="alert alert-warning border-0 shadow-sm rounded-4 p-4 text-center mb-4">
+      <i class="bi bi-hourglass-split text-warning" style="font-size: 3rem;"></i>
+      <h1 class="h4 fw-bold mt-3 mb-2">Đang xử lý hoặc chờ xác nhận</h1>
+      <p class="text-muted mb-0" th:if="${donation != null and donation.paymentMethod == 'bank'}">
+        Bạn đã chọn hình thức chuyển khoản. Vui lòng hoàn tất theo hướng dẫn từ ban quản trị (nếu có).
+      </p>
+      <p class="text-muted mb-0" th:unless="${donation != null and donation.paymentMethod == 'bank'}">
+        Trạng thái có thể cập nhật sau vài giây khi MoMo gửi thông báo (IPN). Bạn có thể tải lại trang sau.
+      </p>
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-4 p-4">
+      <h2 class="h6 fw-bold mb-3">Thông tin giao dịch</h2>
+      <div class="row g-3 small">
+        <div class="col-sm-6">
+          <p class="text-muted mb-1">Mã giao dịch</p>
+          <p class="fw-semibold mb-0"><code th:text="${txn != null ? txn : '—'}">—</code></p>
+        </div>
+        <div class="col-sm-6" th:if="${donation != null}">
+          <p class="text-muted mb-1">Số tiền</p>
+          <p class="fw-semibold mb-0"><span th:text="${donation.amount}">0</span> VND</p>
+        </div>
+        <div class="col-sm-6" th:if="${donation == null and queryAmount != null}">
+          <p class="text-muted mb-1">Số tiền (tham khảo)</p>
+          <p class="fw-semibold mb-0"><span th:text="${queryAmount}"></span> VND</p>
+        </div>
+        <div class="col-sm-6" th:if="${donation != null}">
+          <p class="text-muted mb-1">Phương thức</p>
+          <p class="fw-semibold mb-0 text-uppercase" th:text="${donation.paymentMethod}">momo</p>
+        </div>
+        <div class="col-sm-6" th:if="${donation == null}">
+          <p class="text-muted mb-1">Phương thức</p>
+          <p class="fw-semibold mb-0 text-uppercase" th:text="${queryMethod}">momo</p>
+        </div>
+        <div class="col-sm-6" th:if="${donation != null}">
+          <p class="text-muted mb-1">Trạng thái trong hệ thống</p>
+          <p class="fw-semibold mb-0" th:text="${donation.paymentStatus}">PENDING</p>
+        </div>
+        <div class="col-sm-6" th:if="${resultCode != null}">
+          <p class="text-muted mb-1">Mã MoMo (resultCode)</p>
+          <p class="fw-semibold mb-0" th:text="${resultCode}">0</p>
+        </div>
+      </div>
+
+      <div class="d-flex flex-wrap gap-2 mt-4">
+        <a th:href="@{/}" class="btn btn-success rounded-pill px-4">Về trang chủ</a>
+        <a th:href="@{/donate}" class="btn btn-outline-success rounded-pill px-4">Đóng góp tiếp</a>
+      </div>
     </div>
   </div>
 </main>

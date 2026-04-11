@@ -1,7 +1,7 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
 <head th:replace="~{shared/layout :: head('Quyên góp')}"></head>
-<body>
+<body th:with="token=${_csrf != null ? _csrf.token : ''}">
 <nav th:replace="~{shared/layout :: navbar('donate')}"></nav>
 <div th:replace="~{shared/layout :: flash}"></div>
 <main>
@@ -233,8 +233,27 @@
             </div>
 
             <div class="mb-3">
-              <label class="form-label fw-semibold">Số điện thoại <span class="text-danger">*</span></label>
-              <input type="text" th:field="*{phoneNumber}" class="form-control" placeholder="0901234567"/>
+              <label class="form-label fw-semibold">Số điện thoại</label>
+              <input type="text" th:field="*{phoneNumber}" class="form-control" placeholder="0901234567 (tùy chọn)"/>
+            </div>
+
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Kênh thanh toán</label>
+              <div class="d-flex flex-wrap gap-2">
+                <label class="d-flex align-items-center gap-2 border rounded-3 px-3 py-2 mb-0 flex-grow-1"
+                       style="cursor:pointer;max-width:100%;">
+                  <input class="form-check-input mt-0" type="radio" th:field="*{paymentMethod}" value="momo"/>
+                  <span class="fw-semibold"><i class="bi bi-wallet2 text-success me-1"></i>Ví MoMo</span>
+                </label>
+                <label class="d-flex align-items-center gap-2 border rounded-3 px-3 py-2 mb-0 flex-grow-1"
+                       style="cursor:pointer;max-width:100%;">
+                  <input class="form-check-input mt-0" type="radio" th:field="*{paymentMethod}" value="bank"/>
+                  <span class="fw-semibold"><i class="bi bi-bank text-secondary me-1"></i>Chuyển khoản</span>
+                </label>
+              </div>
+              <p class="small text-muted mt-2 mb-0">
+                MoMo: chuyển sang cổng thanh toán. Chuyển khoản: lưu mã giao dịch để đối soát thủ công.
+              </p>
             </div>
 
             <div class="mb-4">
@@ -244,7 +263,7 @@
 
             <div class="d-grid">
               <button type="submit" class="btn donate-submit btn-lg text-white">
-                <i class="bi bi-heart me-2"></i>Quyên góp qua MoMo
+                <i class="bi bi-heart me-2"></i>Tiếp tục quyên góp
               </button>
             </div>
           </form>

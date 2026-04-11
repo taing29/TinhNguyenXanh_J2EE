@@ -28,9 +28,23 @@ public class Donation {
 
     private String message;
 
+    /** momo | bank */
+    @Column(nullable = false)
+    @Builder.Default
+    private String paymentMethod = "momo";
+
+    /** PENDING | SUCCESS | FAILED */
+    @Column(nullable = false)
+    @Builder.Default
+    private String paymentStatus = "PENDING";
+
+    /** Mã tham chiếu từ MoMo (transId) */
+    private String providerRef;
+
     @Column(nullable = false)
     private boolean isPaid = false;
 
+    /** Mã đơn gửi MoMo (orderId), ví dụ TNX123 */
     private String transactionCode;
 
     @Column(nullable = false)
