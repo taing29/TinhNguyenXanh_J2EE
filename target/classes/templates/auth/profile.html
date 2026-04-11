@@ -2,150 +2,194 @@
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
 <head th:replace="~{shared/layout :: head('Hồ sơ của tôi')}">
-  <style>
-    .avatar-circle { width:90px;height:90px;border-radius:50%;background:linear-gradient(135deg,#2e7d32,#66bb6a);display:flex;align-items:center;justify-content:center;font-size:2.2rem;font-weight:700;color:#fff; }
-    .stat-card { border:none;border-radius:12px;box-shadow:0 2px 12px rgba(0,0,0,.07); }
-    .info-row { border-bottom:1px solid #f0f0f0;padding:10px 0; }
-    .info-row:last-child { border-bottom:none; }
-    .skill-tag { background:#e8f5e9;color:#2e7d32;border-radius:20px;padding:3px 12px;font-size:.82rem;display:inline-block;margin:2px; }
-  </style>
+  <style>/* replaced */</style>
 </head>
 <body>
 <nav th:replace="~{shared/layout :: navbar('')}"></nav>
 <div th:replace="~{shared/layout :: flash}"></div>
 
+<style>
+  :root {
+    --profile-surface: #ffffff;
+    --profile-text: #1f2937;
+    --profile-muted: #667085;
+  }
+
+  .profile-card {
+    border: 0;
+    border-radius: 1.5rem;
+    box-shadow: 0 18px 55px rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+  }
+
+  .profile-card-body {
+    position: relative;
+    z-index: 1;
+  }
+
+  .profile-card {
+    background: var(--profile-surface);
+  }
+
+  .profile-section-title {
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--profile-green);
+    margin-bottom: 1rem;
+  }
+
+  .detail-row {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  }
+
+  .detail-row:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  .detail-label {
+    min-width: 140px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--profile-muted);
+  }
+
+  .detail-value {
+    flex: 1;
+    font-weight: 600;
+    color: var(--profile-text);
+    text-align: right;
+  }
+
+  .detail-value-soft {
+    color: var(--profile-muted);
+    font-weight: 500;
+  }
+
+  .skill-tag {
+    background: var(--profile-green-soft);
+    color: var(--profile-green);
+    border-radius: 999px;
+    padding: 0.35rem 0.8rem;
+    font-size: 0.84rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .subtle-box {
+    background: linear-gradient(180deg, #f8fbf8 0%, #ffffff 100%);
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    border-radius: 1rem;
+    padding: 1rem;
+  }
+
+  @media (max-width: 991.98px) {
+    .detail-row {
+      flex-direction: column;
+    }
+
+    .detail-value {
+      text-align: left;
+    }
+  }
+</style>
+
 <main>
-  <div class="container py-5">
-    <div class="row g-4">
-
-      <!-- LEFT: Avatar + stats -->
+  <div class="container profile-page">
+    <div class="row g-4 align-items-start">
       <div class="col-lg-4">
-        <div class="card border-0 shadow-sm p-4 text-center mb-4">
-          <div class="d-flex justify-content-center mb-3">
-            <div class="avatar-circle" th:text="${user.fullName.substring(0,1)}">A</div>
-          </div>
-          <h4 class="fw-bold mb-1" th:text="${user.fullName}"></h4>
-          <p class="text-muted small mb-2" th:text="${user.email}"></p>
-          <span class="badge bg-success mb-3">Tình nguyện viên</span>
-
-          <div th:if="${volunteer != null}">
-            <span th:if="${volunteer.availability == 'Available'}" class="badge bg-success-subtle text-success border border-success">
-              <i class="bi bi-circle-fill me-1" style="font-size:.5rem"></i>Sẵn sàng
-            </span>
-            <span th:if="${volunteer.availability == 'Busy'}" class="badge bg-warning-subtle text-warning border border-warning">
-              <i class="bi bi-circle-fill me-1" style="font-size:.5rem"></i>Bận
-            </span>
-          </div>
-
-          <hr/>
-          <a th:href="@{/auth/profile/edit}" class="btn btn-primary w-100">
-            <i class="bi bi-pencil me-2"></i>Chỉnh sửa hồ sơ
-          </a>
-        </div>
-
-        <!-- Stats -->
-        <div class="card stat-card p-4">
-          <h6 class="fw-bold mb-3 text-muted text-uppercase" style="font-size:.75rem;letter-spacing:.05em">Thống kê</h6>
-          <div class="row g-3 text-center">
-            <div class="col-6">
-              <div class="p-3 rounded-3 bg-light">
-                <div class="fw-bold fs-3 text-success" th:text="${totalRegs}">0</div>
-                <div class="text-muted small">Sự kiện đăng ký</div>
-              </div>
-            </div>
-            <div class="col-6">
-              <div class="p-3 rounded-3 bg-light">
-                <div class="fw-bold fs-3 text-success" th:text="${confirmedRegs}">0</div>
-                <div class="text-muted small">Đã xác nhận</div>
-              </div>
-            </div>
-          </div>
-          <div class="mt-3">
-            <div class="d-flex justify-content-between small text-muted mb-1">
-              <span>Tỉ lệ xác nhận</span>
-              <span th:text="${totalRegs > 0 ? #numbers.formatDecimal(confirmedRegs * 100.0 / totalRegs, 1, 0) + '%' : '0%'}">0%</span>
-            </div>
-            <div class="progress" style="height:6px">
-              <div class="progress-bar bg-success"
-                   th:style="'width:' + (${totalRegs > 0 ? confirmedRegs * 100 / totalRegs : 0}) + '%'"></div>
-            </div>
-          </div>
-        </div>
+        <div th:replace="~{shared/volunteer-profile-shell :: shell(${user}, ${volunteer}, ${totalRegs}, ${confirmedRegs}, 'profile')}"></div>
       </div>
 
-      <!-- RIGHT: Info -->
       <div class="col-lg-8">
-        <div class="card border-0 shadow-sm p-4 mb-4">
-          <div class="d-flex justify-content-between align-items-center mb-3">
-            <h5 class="fw-bold mb-0"><i class="bi bi-person me-2 text-success"></i>Thông tin cá nhân</h5>
-            <a th:href="@{/auth/profile/edit}" class="btn btn-outline-success btn-sm">
-              <i class="bi bi-pencil me-1"></i>Sửa
-            </a>
-          </div>
+        <div class="card profile-card mb-4">
+          <div class="card-body profile-card-body p-4 p-xl-5">
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
+              <div>
+                <div class="profile-section-title mb-2">Thông tin cá nhân</div>
+                <h4 class="fw-bold mb-1 mb-sm-2">Xem và quản lý hồ sơ của bạn</h4>
+                <p class="text-muted mb-0">Giữ thông tin cá nhân và hồ sơ tình nguyện luôn cập nhật.</p>
+              </div>
+              <a th:href="@{/auth/profile/edit}" class="btn btn-outline-success quick-link flex-shrink-0">
+                <i class="bi bi-pencil"></i>Sửa hồ sơ
+              </a>
+            </div>
 
-          <div class="info-row d-flex">
-            <div class="text-muted" style="width:140px">Họ và tên</div>
-            <div class="fw-semibold" th:text="${user.fullName}">—</div>
-          </div>
-          <div class="info-row d-flex">
-            <div class="text-muted" style="width:140px">Email</div>
-            <div th:text="${user.email}">—</div>
-          </div>
-          <div class="info-row d-flex">
-            <div class="text-muted" style="width:140px">Điện thoại</div>
-            <div th:text="${user.phoneNumber != null ? user.phoneNumber : '—'}">—</div>
-          </div>
-          <div class="info-row d-flex">
-            <div class="text-muted" style="width:140px">Địa chỉ</div>
-            <div th:text="${user.address != null ? user.address : '—'}">—</div>
-          </div>
-          <div class="info-row d-flex">
-            <div class="text-muted" style="width:140px">Tuổi</div>
-            <div th:text="${user.age != null ? user.age : '—'}">—</div>
-          </div>
-          <div class="info-row d-flex">
-            <div class="text-muted" style="width:140px">Ngày tham gia</div>
-            <div th:text="${#temporals.format(user.registeredDate,'dd/MM/yyyy')}">—</div>
-          </div>
-        </div>
-
-        <!-- Volunteer info -->
-        <div th:if="${volunteer != null}" class="card border-0 shadow-sm p-4 mb-4">
-          <h5 class="fw-bold mb-3"><i class="bi bi-stars me-2 text-success"></i>Hồ sơ tình nguyện</h5>
-
-          <div class="info-row d-flex" th:if="${volunteer.bio != null and !#strings.isEmpty(volunteer.bio)}">
-            <div class="text-muted" style="width:140px">Giới thiệu</div>
-            <div th:text="${volunteer.bio}">—</div>
-          </div>
-
-          <div class="info-row d-flex align-items-start">
-            <div class="text-muted flex-shrink-0" style="width:140px">Kỹ năng</div>
-            <div>
-              <th:block th:if="${volunteer.skills != null and !#strings.isEmpty(volunteer.skills)}">
-                <span th:each="skill : ${#strings.arraySplit(volunteer.skills, ',')}"
-                      th:text="${#strings.trim(skill)}" class="skill-tag"></span>
-              </th:block>
-              <span th:unless="${volunteer.skills != null and !#strings.isEmpty(volunteer.skills)}"
-                    class="text-muted">Chưa cập nhật</span>
+            <div class="subtle-box">
+              <div class="detail-row">
+                <div class="detail-label">Họ và tên</div>
+                <div class="detail-value" th:text="${user.fullName}">—</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Email</div>
+                <div class="detail-value" th:text="${user.email}">—</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Điện thoại</div>
+                <div class="detail-value detail-value-soft" th:text="${user.phoneNumber != null and !#strings.isEmpty(user.phoneNumber) ? user.phoneNumber : 'Chưa cập nhật'}">—</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Địa chỉ</div>
+                <div class="detail-value detail-value-soft" th:text="${user.address != null and !#strings.isEmpty(user.address) ? user.address : 'Chưa cập nhật'}">—</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Tuổi</div>
+                <div class="detail-value detail-value-soft" th:text="${user.age != null and !#strings.isEmpty(user.age) ? user.age : 'Chưa cập nhật'}">—</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Ngày tham gia</div>
+                <div class="detail-value detail-value-soft"
+                     th:text="${user.registeredDate != null ? #temporals.format(user.registeredDate, 'dd/MM/yyyy') : 'Chưa cập nhật'}">—</div>
+              </div>
             </div>
           </div>
         </div>
 
-        <!-- Quick links -->
-        <div class="card border-0 shadow-sm p-4">
-          <h5 class="fw-bold mb-3"><i class="bi bi-lightning me-2 text-success"></i>Truy cập nhanh</h5>
-          <div class="d-flex gap-2 flex-wrap">
-            <a th:href="@{/events/my-registrations}" class="btn btn-outline-success btn-sm">
-              <i class="bi bi-calendar-check me-1"></i>Đăng ký của tôi
-            </a>
-            <a th:href="@{/events/my-favorites}" class="btn btn-outline-danger btn-sm">
-              <i class="bi bi-heart me-1"></i>Sự kiện yêu thích
-            </a>
-            <a th:href="@{/events}" class="btn btn-outline-primary btn-sm">
-              <i class="bi bi-search me-1"></i>Khám phá sự kiện
-            </a>
+        <div th:if="${volunteer != null}" class="card profile-card mb-4">
+          <div class="card-body profile-card-body p-4 p-xl-5">
+            <div class="profile-section-title">Hồ sơ tình nguyện</div>
+
+            <div class="detail-row" th:if="${volunteer.bio != null and !#strings.isEmpty(volunteer.bio)}">
+              <div class="detail-label">Giới thiệu</div>
+              <div class="detail-value detail-value-soft text-start" th:text="${volunteer.bio}">—</div>
+            </div>
+
+            <div class="detail-row align-items-start">
+              <div class="detail-label">Kỹ năng</div>
+              <div class="detail-value text-end">
+                <th:block th:if="${volunteer.skills != null and !#strings.isEmpty(volunteer.skills)}">
+                  <span th:each="skill : ${#strings.arraySplit(volunteer.skills, ',')}"
+                        th:text="${#strings.trim(skill)}"
+                        class="skill-tag me-2 mb-2"></span>
+                </th:block>
+                <span th:unless="${volunteer.skills != null and !#strings.isEmpty(volunteer.skills)}"
+                      class="detail-value-soft fw-normal">Chưa cập nhật</span>
+              </div>
+            </div>
+
+            <div class="detail-row">
+              <div class="detail-label">Trạng thái</div>
+              <div class="detail-value detail-value-soft"
+                   th:text="${volunteer.availability != null ? volunteer.availability : 'Chưa cập nhật'}">—</div>
+            </div>
+
+            <div class="detail-row">
+              <div class="detail-label">Ngày tham gia</div>
+              <div class="detail-value detail-value-soft"
+                   th:text="${volunteer.joinedDate != null ? #temporals.format(volunteer.joinedDate, 'dd/MM/yyyy') : 'Chưa cập nhật'}">—</div>
+            </div>
           </div>
         </div>
+
       </div>
     </div>
   </div>

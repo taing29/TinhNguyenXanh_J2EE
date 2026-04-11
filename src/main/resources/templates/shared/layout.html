@@ -385,8 +385,8 @@
             <li sec:authorize="hasRole('VOLUNTEER')">
               <a class="dropdown-item" th:href="@{/auth/profile}"><i class="bi bi-person-badge me-2"></i>Hồ sơ của tôi</a>
             </li>
-            <li><a class="dropdown-item" th:href="@{/events/my-registrations}"><i class="bi bi-calendar-check me-2"></i>Đăng ký của tôi</a></li>
-            <li><a class="dropdown-item" th:href="@{/events/my-favorites}"><i class="bi bi-heart me-2"></i>Yêu thích</a></li>
+            <li><a class="dropdown-item" th:href="@{/auth/my-registrations}"><i class="bi bi-calendar-check me-2"></i>Đăng ký của tôi</a></li>
+            <li><a class="dropdown-item" th:href="@{/auth/my-favorites}"><i class="bi bi-heart me-2"></i>Yêu thích</a></li>
             <li><hr class="dropdown-divider"/></li>
             <li>
               <form th:action="@{/auth/logout}" method="post">

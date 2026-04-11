@@ -13,7 +13,11 @@ import java.util.List;
 @Repository
 public interface EventFavoriteRepository extends JpaRepository<EventFavorite, EventFavoriteId> {
 
-    @Query("SELECT ef FROM EventFavorite ef JOIN FETCH ef.event WHERE ef.user.id = :userId")
+        @Query("SELECT DISTINCT ef FROM EventFavorite ef " +
+            "JOIN FETCH ef.event e " +
+            "LEFT JOIN FETCH e.category " +
+            "LEFT JOIN FETCH e.organization " +
+            "WHERE ef.user.id = :userId")
     List<EventFavorite> findByUser_Id(@Param("userId") Long userId);
 
     /** JPQL: derived delete/exists không ổn định với @IdClass + @ManyToOne làm khóa */

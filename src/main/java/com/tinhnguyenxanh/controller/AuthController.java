@@ -1,6 +1,7 @@
 package com.tinhnguyenxanh.controller;
 
 import com.tinhnguyenxanh.dto.RegisterDTO;
+import com.tinhnguyenxanh.repository.EventFavoriteRepository;
 import com.tinhnguyenxanh.repository.VolunteerRepository;
 import com.tinhnguyenxanh.repository.EventRegistrationRepository;
 import com.tinhnguyenxanh.security.CustomUserDetails;
@@ -22,6 +23,7 @@ public class AuthController {
     private final UserService userService;
     private final VolunteerRepository volunteerRepo;
     private final EventRegistrationRepository registrationRepo;
+    private final EventFavoriteRepository favoriteRepo;
 
     @GetMapping("/login")
     public String loginPage(@RequestParam(required = false) String error,
@@ -82,6 +84,14 @@ public class AuthController {
         var volunteer = volunteerRepo.findByUser_Id(userDetails.getId()).orElse(null);
         model.addAttribute("user", userDetails.getUser());
         model.addAttribute("volunteer", volunteer);
+        int totalRegs = volunteer != null
+            ? registrationRepo.countByVolunteer_Id(volunteer.getId())
+            : 0;
+        int confirmedRegs = volunteer != null
+            ? registrationRepo.countByVolunteer_IdAndStatusIgnoreCase(volunteer.getId(), "Confirmed")
+            : 0;
+        model.addAttribute("totalRegs", totalRegs);
+        model.addAttribute("confirmedRegs", confirmedRegs);
         return "auth/profile-edit";
     }
 
@@ -101,5 +111,35 @@ public class AuthController {
         if (ok) redirectAttrs.addFlashAttribute("success", "Đã cập nhật thông tin cá nhân");
         else redirectAttrs.addFlashAttribute("error", "Cập nhật thất bại");
         return "redirect:/auth/profile";
+    }
+
+    @GetMapping("/my-registrations")
+    public String myRegistrations(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        if (userDetails == null) return "redirect:/auth/login";
+        var volunteer = volunteerRepo.findByUser_Id(userDetails.getId()).orElse(null);
+        model.addAttribute("user", userDetails.getUser());
+        model.addAttribute("volunteer", volunteer);
+        model.addAttribute("registrations", volunteer != null
+                ? registrationRepo.findByVolunteerIdWithEvent(volunteer.getId())
+                : java.util.List.of());
+        model.addAttribute("totalRegs", volunteer != null ? registrationRepo.countByVolunteer_Id(volunteer.getId()) : 0);
+        model.addAttribute("confirmedRegs", volunteer != null
+                ? registrationRepo.countByVolunteer_IdAndStatusIgnoreCase(volunteer.getId(), "Confirmed")
+                : 0);
+        return "auth/my-registrations";
+    }
+
+    @GetMapping("/my-favorites")
+    public String myFavorites(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        if (userDetails == null) return "redirect:/auth/login";
+        var volunteer = volunteerRepo.findByUser_Id(userDetails.getId()).orElse(null);
+        model.addAttribute("user", userDetails.getUser());
+        model.addAttribute("volunteer", volunteer);
+        model.addAttribute("favorites", favoriteRepo.findByUser_Id(userDetails.getId()));
+        model.addAttribute("totalRegs", volunteer != null ? registrationRepo.countByVolunteer_Id(volunteer.getId()) : 0);
+        model.addAttribute("confirmedRegs", volunteer != null
+                ? registrationRepo.countByVolunteer_IdAndStatusIgnoreCase(volunteer.getId(), "Confirmed")
+                : 0);
+        return "auth/my-favorites";
     }
 }
