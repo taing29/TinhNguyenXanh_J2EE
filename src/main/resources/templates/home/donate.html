@@ -1,80 +1,260 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8"/><title>Quyên góp - Tình Nguyện Xanh</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"/>
-  <style>:root{--primary:#2e7d32}.btn-primary{background:var(--primary);border-color:var(--primary)}.navbar-brand{color:var(--primary)!important;font-weight:700} footer{background:#1b5e20;color:#fff}</style>
-</head>
+<head th:replace="~{shared/layout :: head('Quyên góp')}"></head>
 <body>
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-  <div class="container">
-    <a class="navbar-brand" th:href="@{/}">🌿 Tình Nguyện Xanh</a>
-    <ul class="navbar-nav ms-auto">
-      <li class="nav-item"><a class="nav-link" th:href="@{/}">Trang chủ</a></li>
-      <li class="nav-item"><a class="nav-link" th:href="@{/events}">Sự kiện</a></li>
-    </ul>
-  </div>
-</nav>
-<div class="container py-5">
-  <div class="row justify-content-center">
-    <div class="col-md-6">
-      <div class="card border-0 shadow-sm p-4">
-        <div class="text-center mb-4">
-          <i class="bi bi-heart-fill text-danger" style="font-size:3rem"></i>
-          <h3 class="fw-bold mt-2">Quyên góp ủng hộ</h3>
-          <p class="text-muted">Mỗi đóng góp của bạn là một bước xây dựng cộng đồng xanh</p>
+<nav th:replace="~{shared/layout :: navbar('donate')}"></nav>
+<div th:replace="~{shared/layout :: flash}"></div>
+<main>
+  <style>
+    .donate-wrap {
+      background:
+        radial-gradient(circle at top left, rgba(21,128,61,.08), transparent 28%),
+        linear-gradient(180deg, #f6fbf7 0%, #f8fafc 100%);
+      padding: 2.5rem 0 4rem;
+      min-height: 100vh;
+    }
+
+    .donate-hero {
+      background: linear-gradient(135deg, #14532d 0%, #15803d 48%, #22c55e 100%);
+      color:#fff;
+      border-radius: 2rem;
+      padding: 2rem;
+      box-shadow: 0 24px 70px rgba(21,128,61,.2);
+      margin-bottom: 1.5rem;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .donate-hero::before {
+      content:'';
+      position:absolute;
+      inset:0;
+      background: radial-gradient(circle at top right, rgba(255,255,255,.16), transparent 32%);
+      pointer-events:none;
+    }
+
+    .donate-hero-inner { position: relative; z-index: 1; }
+
+    .donate-kicker {
+      display:inline-flex;
+      align-items:center;
+      gap:.45rem;
+      padding:.5rem .95rem;
+      border-radius:999px;
+      background: rgba(255,255,255,.14);
+      border:1px solid rgba(255,255,255,.2);
+      font-weight:700;
+      font-size:.84rem;
+      margin-bottom:1rem;
+    }
+
+    .donate-title {
+      font-size: clamp(2rem, 4vw, 3rem);
+      font-weight: 900;
+      line-height: 1.05;
+      margin-bottom: .75rem;
+      letter-spacing: -.03em;
+    }
+
+    .donate-text {
+      font-size: 1.02rem;
+      color: rgba(255,255,255,.88);
+      max-width: 680px;
+      line-height: 1.7;
+      margin-bottom: 0;
+    }
+
+    .donate-grid {
+      display:grid;
+      grid-template-columns: 1fr 1.15fr;
+      gap: 1.5rem;
+      align-items: stretch;
+    }
+
+    .donate-panel,
+    .donate-form-card {
+      background:#fff;
+      border:1px solid rgba(15,23,42,.06);
+      border-radius: 1.75rem;
+      box-shadow: 0 20px 54px rgba(15,23,42,.08);
+      padding: 1.5rem;
+    }
+
+    .donate-panel {
+      background: linear-gradient(180deg, #ffffff 0%, #f8fbf8 100%);
+    }
+
+    .donate-stat {
+      display:flex;
+      gap: .9rem;
+      align-items:flex-start;
+      padding: 1rem;
+      border-radius: 1rem;
+      background: #fff;
+      border: 1px solid rgba(15,23,42,.05);
+      margin-bottom: .9rem;
+    }
+
+    .donate-stat-icon {
+      width: 2.6rem;
+      height: 2.6rem;
+      border-radius: .9rem;
+      display:grid;
+      place-items:center;
+      color:#fff;
+      background: linear-gradient(135deg, #15803d, #22c55e);
+      flex-shrink:0;
+      font-size: 1.1rem;
+      line-height: 1;
+      font-weight: 800;
+    }
+
+    .donate-stat h5 { margin-bottom:.2rem; font-weight:800; }
+    .donate-stat p { margin-bottom:0; color:#667085; }
+
+    .donate-form-card .form-control,
+    .donate-form-card .btn { border-radius: 999px; }
+
+    .donate-form-card .form-control {
+      min-height: 3.1rem;
+      border:1px solid #dbe6dc;
+      box-shadow:none;
+    }
+
+    .donate-form-card .form-control:focus {
+      border-color:#15803d;
+      box-shadow:0 0 0 4px rgba(21,128,61,.1);
+    }
+
+    .preset-row {
+      display:flex;
+      flex-wrap:wrap;
+      gap:.5rem;
+      margin-bottom:.75rem;
+    }
+
+    .preset-row .btn {
+      border-radius:999px;
+      font-weight:700;
+    }
+
+    .donate-submit {
+      background: linear-gradient(135deg, #dc2626, #ef4444);
+      border:none;
+      box-shadow: 0 14px 28px rgba(220,38,38,.18);
+      padding: .9rem 1.2rem;
+      font-weight: 800;
+    }
+
+    .donate-submit:hover { background: linear-gradient(135deg, #b91c1c, #dc2626); }
+
+    .mini-note {
+      margin-top: 1rem;
+      padding: 1rem 1.1rem;
+      border-radius: 1rem;
+      background: var(--green-light);
+      border: 1px solid #d7f0df;
+      color:#14532d;
+      font-size:.94rem;
+    }
+
+    @media (max-width: 991.98px) {
+      .donate-grid { grid-template-columns: 1fr; }
+    }
+
+    @media (max-width: 576px) {
+      .donate-hero { padding: 1.5rem; border-radius: 1.5rem; }
+      .donate-panel, .donate-form-card { padding: 1.2rem; border-radius: 1.35rem; }
+    }
+  </style>
+
+  <div class="donate-wrap">
+    <div class="container">
+      <section class="donate-hero">
+        <div class="donate-hero-inner">
+          <div class="donate-kicker"><i class="bi bi-heart-fill"></i><span>Đóng góp để tạo tác động thực tế</span></div>
+          <h3 class="donate-title">Quyên góp ủng hộ</h3>
+          <p class="donate-text">Mỗi đóng góp của bạn là một bước xây dựng cộng đồng xanh, hỗ trợ các hoạt động tình nguyện và lan toả những giá trị bền vững.</p>
+        </div>
+      </section>
+
+      <div class="donate-grid">
+        <div class="donate-panel">
+          <div class="donate-stat">
+            <div class="donate-stat-icon">✦</div>
+            <div>
+              <h5>Minh bạch và an toàn</h5>
+              <p>Thông tin đóng góp được xử lý qua cổng thanh toán an toàn.</p>
+            </div>
+          </div>
+          <div class="donate-stat">
+            <div class="donate-stat-icon">◉</div>
+            <div>
+              <h5>Hỗ trợ cộng đồng</h5>
+              <p>Khoản đóng góp giúp duy trì hoạt động thiện nguyện và sự kiện cộng đồng.</p>
+            </div>
+          </div>
+          <div class="donate-stat mb-0">
+            <div class="donate-stat-icon">↺</div>
+            <div>
+              <h5>Tác động lâu dài</h5>
+              <p>Mỗi lần ủng hộ góp phần nuôi dưỡng một mạng lưới tình nguyện bền vững.</p>
+            </div>
+          </div>
+          <div class="mini-note">
+            <i class="bi bi-info-circle me-2"></i>Chọn số tiền gợi ý hoặc nhập số tiền tùy chỉnh phù hợp với bạn.
+          </div>
         </div>
 
-        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+        <div class="donate-form-card">
+          <form th:action="@{/donate}" th:object="${donationDTO}" method="post">
+            <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
 
-        <form th:action="@{/donate}" th:object="${donationDTO}" method="post">
-          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
-
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Họ và tên <span class="text-danger">*</span></label>
-            <input type="text" th:field="*{donorName}"
-                   th:classappend="${#fields.hasErrors('donorName')} ? 'is-invalid'"
-                   class="form-control" placeholder="Nguyễn Văn A"/>
-            <div class="invalid-feedback" th:errors="*{donorName}"></div>
-          </div>
-
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Số tiền (VNĐ) <span class="text-danger">*</span></label>
-            <div class="d-flex gap-2 mb-2">
-              <button type="button" class="btn btn-outline-success btn-sm" onclick="setAmount(50000)">50.000</button>
-              <button type="button" class="btn btn-outline-success btn-sm" onclick="setAmount(100000)">100.000</button>
-              <button type="button" class="btn btn-outline-success btn-sm" onclick="setAmount(200000)">200.000</button>
-              <button type="button" class="btn btn-outline-success btn-sm" onclick="setAmount(500000)">500.000</button>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Họ và tên <span class="text-danger">*</span></label>
+              <input type="text" th:field="*{donorName}"
+                     th:classappend="${#fields.hasErrors('donorName')} ? 'is-invalid'"
+                     class="form-control" placeholder="Nguyễn Văn A"/>
+              <div class="invalid-feedback" th:errors="*{donorName}"></div>
             </div>
-            <input type="number" th:field="*{amount}" id="amountInput"
-                   th:classappend="${#fields.hasErrors('amount')} ? 'is-invalid'"
-                   class="form-control" placeholder="Nhập số tiền..." min="10000"/>
-            <div class="invalid-feedback" th:errors="*{amount}"></div>
-          </div>
 
-          <div class="mb-3">
-            <label class="form-label fw-semibold">Số điện thoại <span class="text-danger">*</span></label>
-            <input type="text" th:field="*{phoneNumber}" class="form-control" placeholder="0901234567"/>
-          </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Số tiền (VNĐ) <span class="text-danger">*</span></label>
+              <div class="preset-row">
+                <button type="button" class="btn btn-outline-success btn-sm" onclick="setAmount(50000)">50.000</button>
+                <button type="button" class="btn btn-outline-success btn-sm" onclick="setAmount(100000)">100.000</button>
+                <button type="button" class="btn btn-outline-success btn-sm" onclick="setAmount(200000)">200.000</button>
+                <button type="button" class="btn btn-outline-success btn-sm" onclick="setAmount(500000)">500.000</button>
+              </div>
+              <input type="number" th:field="*{amount}" id="amountInput"
+                     th:classappend="${#fields.hasErrors('amount')} ? 'is-invalid'"
+                     class="form-control" placeholder="Nhập số tiền..." min="10000"/>
+              <div class="invalid-feedback" th:errors="*{amount}"></div>
+            </div>
 
-          <div class="mb-4">
-            <label class="form-label fw-semibold">Lời nhắn (tùy chọn)</label>
-            <textarea th:field="*{message}" class="form-control" rows="2" placeholder="Gửi lời chúc đến cộng đồng..."></textarea>
-          </div>
+            <div class="mb-3">
+              <label class="form-label fw-semibold">Số điện thoại <span class="text-danger">*</span></label>
+              <input type="text" th:field="*{phoneNumber}" class="form-control" placeholder="0901234567"/>
+            </div>
 
-          <div class="d-grid">
-            <button type="submit" class="btn btn-danger btn-lg">
-              <i class="bi bi-heart me-2"></i>Quyên góp qua MoMo
-            </button>
-          </div>
-        </form>
+            <div class="mb-4">
+              <label class="form-label fw-semibold">Lời nhắn (tùy chọn)</label>
+              <textarea th:field="*{message}" class="form-control" rows="3" placeholder="Gửi lời chúc đến cộng đồng..."></textarea>
+            </div>
+
+            <div class="d-grid">
+              <button type="submit" class="btn donate-submit btn-lg text-white">
+                <i class="bi bi-heart me-2"></i>Quyên góp qua MoMo
+              </button>
+            </div>
+          </form>
+        </div>
       </div>
     </div>
   </div>
-</div>
-<footer class="py-3 mt-5"><div class="container text-center"><p class="mb-0">🌿 Tình Nguyện Xanh &copy; 2025</p></div></footer>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</main>
+<footer th:replace="~{shared/layout :: footer}"></footer>
+<th:block th:replace="~{shared/layout :: scripts}"></th:block>
 <script>function setAmount(val){ document.getElementById('amountInput').value = val; }</script>
 </body>
 </html>

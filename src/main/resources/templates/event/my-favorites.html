@@ -1,48 +1,253 @@
 <!DOCTYPE html>
-<html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head>
-  <meta charset="UTF-8"/><title>Yêu thích - Tình Nguyện Xanh</title>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.0/font/bootstrap-icons.css"/>
-  <style>footer{background:#1b5e20;color:#fff}.card{border:none;box-shadow:0 2px 8px rgba(0,0,0,.1)}</style>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head th:replace="~{shared/layout :: head('Sự kiện yêu thích')}">
+  <style>/* replaced */</style>
 </head>
+
 <body>
-<nav class="navbar navbar-expand-lg navbar-light bg-white shadow-sm">
-  <div class="container">
-    <a class="navbar-brand fw-bold text-success" th:href="@{/}">🌿 Tình Nguyện Xanh</a>
-    <ul class="navbar-nav ms-auto">
-      <li class="nav-item"><a class="nav-link" th:href="@{/events}">Sự kiện</a></li>
-      <li class="nav-item"><a class="nav-link" th:href="@{/events/my-registrations}">Đăng ký của tôi</a></li>
-      <li class="nav-item"><a class="nav-link fw-bold text-success" th:href="@{/events/my-favorites}">Yêu thích</a></li>
-    </ul>
-  </div>
-</nav>
-<div class="container py-5">
-  <h2 class="fw-bold text-success mb-4"><i class="bi bi-heart me-2"></i>Sự kiện yêu thích</h2>
-  <div class="row g-4">
-    <div th:each="fav : ${favorites}" class="col-md-4">
-      <div class="card h-100">
-        <img th:if="${fav.event.images != null}" th:src="${fav.event.images}"
-             class="card-img-top" style="height:180px;object-fit:cover" alt="event"/>
-        <img th:unless="${fav.event.images != null}"
-             src="https://via.placeholder.com/400x180?text=No+Image"
-             class="card-img-top" style="height:180px;object-fit:cover" alt="event"/>
-        <div class="card-body">
-          <h5 class="card-title" th:text="${fav.event.title}"></h5>
-          <p class="text-muted small"><i class="bi bi-geo-alt me-1"></i><span th:text="${fav.event.location}"></span></p>
-          <p class="text-muted small"><i class="bi bi-calendar me-1"></i>
-            <span th:text="${#temporals.format(fav.event.startTime,'dd/MM/yyyy')}"></span>
-          </p>
-          <a th:href="@{/events/{id}(id=${fav.event.id})}" class="btn btn-primary btn-sm w-100">Xem chi tiết</a>
+<nav th:replace="~{shared/layout :: navbar('events')}"></nav>
+<div th:replace="~{shared/layout :: flash}"></div>
+
+<style>
+  :root {
+    --green:#2e7d32; --green-dark:#1b5e20; --green-light:#f0fdf4;
+    --green-border:#bbf7d0; --text:#0f172a; --muted:#64748b; --border:#e5e7eb;
+    --radius:14px; --shadow:0 2px 10px rgba(0,0,0,.07);
+  }
+  .page-wrap { background:#f8fafb; min-height:100vh; padding:2.5rem 0 4rem; }
+  .page-title { font-size:1.5rem; font-weight:800; color:var(--green); margin-bottom:.15rem; }
+  .page-sub   { font-size:.87rem; color:var(--muted); }
+
+  /* Card */
+  .fav-card {
+    background:#fff; border:1px solid var(--border);
+    border-radius:var(--radius); overflow:hidden;
+    box-shadow:var(--shadow); transition:transform .2s, box-shadow .2s;
+    display:flex; flex-direction:column; height:100%;
+    position:relative;
+  }
+  .fav-card:hover { transform:translateY(-4px); box-shadow:0 8px 28px rgba(0,0,0,.12); }
+
+  .thumb-wrap { position:relative; overflow:hidden; }
+  .fav-thumb  { width:100%; height:185px; object-fit:cover; display:block; transition:transform .3s; }
+  .fav-card:hover .fav-thumb { transform:scale(1.04); }
+
+  /* Expired overlay */
+  .expired-overlay {
+    position:absolute; inset:0; background:rgba(0,0,0,.3);
+    display:flex; align-items:center; justify-content:center;
+  }
+  .expired-label {
+    background:rgba(0,0,0,.55); color:#fff; border-radius:20px;
+    font-size:.77rem; font-weight:700; padding:.28rem .8rem;
+    display:flex; align-items:center; gap:.3rem;
+  }
+
+  .cat-badge {
+    position:absolute; bottom:.6rem; left:.6rem;
+    background:rgba(255,255,255,.92); color:var(--green);
+    border-radius:20px; font-size:.71rem; font-weight:700;
+    padding:.17rem .6rem; backdrop-filter:blur(4px);
+  }
+
+  /* Remove fav button (top-right X) */
+  .btn-unfav {
+    position:absolute; top:.6rem; right:.6rem;
+    width:30px; height:30px; border-radius:50%;
+    background:rgba(255,255,255,.92); border:none;
+    display:flex; align-items:center; justify-content:center;
+    cursor:pointer; font-size:.85rem; color:#ef4444;
+    box-shadow:0 1px 4px rgba(0,0,0,.15); transition:all .18s; z-index:2;
+  }
+  .btn-unfav:hover { background:#ef4444; color:#fff; transform:scale(1.1); }
+
+  .card-body-p { padding:1rem 1rem .9rem; display:flex; flex-direction:column; flex:1; }
+  .fav-title {
+    font-weight:700; font-size:.95rem; line-height:1.35; color:var(--text);
+    margin-bottom:.4rem; text-decoration:none;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+  }
+  .fav-title:hover { color:var(--green); }
+  .fav-meta  { font-size:.79rem; color:var(--muted); display:flex; align-items:center; gap:.32rem; margin-bottom:.25rem; }
+
+  .progress-mini { height:5px; border-radius:5px; background:#e5e7eb; margin:.6rem 0 .75rem; }
+  .progress-mini-bar { height:100%; border-radius:5px; background:var(--green); }
+
+  .card-footer-row { display:flex; justify-content:space-between; align-items:center; margin-top:auto; }
+  .reg-count { font-size:.79rem; color:var(--muted); }
+  .btn-detail {
+    background:var(--green); color:#fff; border:none; border-radius:8px;
+    padding:.35rem .8rem; font-size:.8rem; font-weight:600;
+    text-decoration:none; display:inline-flex; align-items:center; gap:.28rem;
+    transition:background .18s;
+  }
+  .btn-detail:hover { background:var(--green-dark); color:#fff; }
+
+  /* Removing animation */
+  .fav-card.removing {
+    opacity:0; transform:scale(.95);
+    transition:opacity .35s, transform .35s;
+    pointer-events:none;
+  }
+
+  /* Toast */
+  #fav-toast {
+    position:fixed; bottom:1.5rem; right:1.5rem;
+    background:#374151; color:#fff; padding:.6rem 1.2rem;
+    border-radius:10px; z-index:9999; font-size:.87rem; font-weight:500;
+    box-shadow:0 4px 16px rgba(0,0,0,.18); opacity:0; transition:opacity .3s; pointer-events:none;
+  }
+
+  /* Empty */
+  .empty-box { text-align:center; padding:4rem 2rem; color:var(--muted); }
+  .empty-box i { font-size:3rem; display:block; margin-bottom:1rem; color:#d1d5db; }
+
+  @media (max-width:576px) { .fav-thumb { height:155px; } }
+</style>
+
+<main>
+  <div class="page-wrap">
+    <div class="container">
+
+      <!-- Header -->
+      <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <div>
+          <h2 class="page-title"><i class="bi bi-heart-fill text-danger me-2"></i>Sự kiện yêu thích</h2>
+          <p class="page-sub" th:if="${favorites != null}"
+             th:text="${#lists.size(favorites)} + ' sự kiện đã lưu'">0 sự kiện</p>
+        </div>
+        <a th:href="@{/events}" class="btn btn-outline-success btn-sm rounded-pill">
+          <i class="bi bi-plus me-1"></i>Khám phá thêm
+        </a>
+      </div>
+
+      <!-- Grid -->
+      <div class="row g-4" id="favGrid" th:if="${favorites != null and !#lists.isEmpty(favorites)}">
+        <div th:each="fav : ${favorites}" class="col-sm-6 col-lg-4"
+             th:id="'fav-col-' + ${fav.event.id}">
+          <div class="fav-card">
+            <div class="thumb-wrap">
+              <img th:src="${fav.event.images != null and !#strings.isEmpty(fav.event.images)
+                         ? fav.event.images
+                         : 'https://placehold.co/400x185/e8f5e9/2e7d32?text=No+Image'}"
+                   class="fav-thumb" alt="event"
+                   onerror="this.src='https://placehold.co/400x185/e8f5e9/2e7d32?text=No+Image'"/>
+
+              <!-- Expired overlay — so sánh endTime với now được truyền từ controller hoặc dùng thuộc tính -->
+              <div th:if="${fav.event.endTime != null and fav.event.status == 'completed'}"
+                   class="expired-overlay">
+                <span class="expired-label"><i class="bi bi-clock-history"></i> Đã kết thúc</span>
+              </div>
+
+              <span class="cat-badge"
+                    th:text="${fav.event.category != null ? fav.event.category.name : ''}">Danh mục</span>
+
+              <!-- Nút bỏ yêu thích ngay tại đây (AJAX) -->
+              <button class="btn-unfav"
+                      th:attr="data-event-id=${fav.event.id}"
+                      onclick="removeFav(this)"
+                      title="Bỏ yêu thích">
+                <i class="bi bi-heart-fill"></i>
+              </button>
+            </div>
+
+            <div class="card-body-p">
+              <a th:href="@{/events/{id}(id=${fav.event.id})}"
+                 class="fav-title" th:text="${fav.event.title}">Tên sự kiện</a>
+
+              <div class="fav-meta"><i class="bi bi-calendar3"></i>
+                <span th:text="${#temporals.format(fav.event.startTime,'dd/MM/yyyy HH:mm')}">--</span>
+              </div>
+              <div class="fav-meta"><i class="bi bi-geo-alt"></i>
+                <span class="text-truncate" th:text="${fav.event.location}">--</span>
+              </div>
+              <div class="fav-meta"><i class="bi bi-building"></i>
+                <span class="text-truncate"
+                      th:text="${fav.event.organization != null ? fav.event.organization.name : ''}">--</span>
+              </div>
+
+              <div class="progress-mini">
+                <div class="progress-mini-bar"
+                     th:style="'width:' + (${fav.event.maxVolunteers > 0 ? fav.event.registrations != null and !#lists.isEmpty(fav.event.registrations) ? #lists.size(fav.event.registrations) * 100 / fav.event.maxVolunteers : 0 : 0}) + '%'"></div>
+              </div>
+
+              <div class="card-footer-row">
+            <span class="reg-count">
+              <i class="bi bi-people me-1"></i>
+              <span th:text="${fav.event.maxVolunteers}">0</span> chỗ
+            </span>
+                <a th:href="@{/events/{id}(id=${fav.event.id})}" class="btn-detail">
+                  Chi tiết <i class="bi bi-arrow-right"></i>
+                </a>
+              </div>
+            </div>
+          </div>
         </div>
       </div>
+
+      <!-- Empty -->
+      <div th:if="${favorites == null or #lists.isEmpty(favorites)}" class="empty-box" id="emptyBox">
+        <i class="bi bi-heart"></i>
+        <p class="fw-semibold">Bạn chưa yêu thích sự kiện nào</p>
+        <p class="small">Nhấn icon ❤️ trên các sự kiện để lưu vào đây!</p>
+        <a th:href="@{/events}" class="btn btn-success btn-sm rounded-pill mt-2 px-4">
+          <i class="bi bi-calendar-event me-1"></i>Khám phá sự kiện
+        </a>
+      </div>
+
     </div>
   </div>
-  <p th:if="${favorites == null or #lists.isEmpty(favorites)}" class="text-center text-muted py-4">
-    Bạn chưa yêu thích sự kiện nào. <a th:href="@{/events}" class="text-success">Khám phá ngay!</a>
-  </p>
-</div>
-<footer class="py-3 mt-5"><div class="container text-center"><p class="mb-0">🌿 Tình Nguyện Xanh &copy; 2025</p></div></footer>
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+</main>
+
+<div id="fav-toast"></div>
+
+<footer th:replace="~{shared/layout :: footer}"></footer>
+<th:block th:replace="~{shared/layout :: scripts}"></th:block>
+
+<script th:inline="javascript">
+  /*<![CDATA[*/
+  const _csrf = /*[[${_csrf != null ? _csrf.token : ''}]]*/ '';
+  const _hdr  = /*[[${_csrf != null ? _csrf.headerName : 'X-CSRF-TOKEN'}]]*/ 'X-CSRF-TOKEN';
+
+  async function removeFav(btn) {
+    const id = btn.dataset.eventId;
+    btn.disabled = true;
+    try {
+      const res = await fetch('/events/' + id + '/favorite/ajax', {
+        method:'POST', headers:{ [_hdr]:_csrf, 'Content-Type':'application/json' }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        if (!data.favorited) {
+          // Animate ra rồi remove
+          const col = document.getElementById('fav-col-' + id);
+          if (col) {
+            col.querySelector('.fav-card').classList.add('removing');
+            setTimeout(() => {
+              col.remove();
+              // Nếu không còn item nào, hiện empty
+              const grid = document.getElementById('favGrid');
+              if (grid && grid.querySelectorAll('[id^="fav-col-"]').length === 0) {
+                grid.style.display = 'none';
+                document.getElementById('emptyBox').style.display = 'block';
+              }
+            }, 380);
+          }
+          showToast('Đã bỏ yêu thích');
+        }
+      }
+    } catch(e) { console.error(e); btn.disabled = false; }
+  }
+
+  function showToast(msg) {
+    const t = document.getElementById('fav-toast');
+    t.textContent = msg; t.style.opacity = '1';
+    clearTimeout(t._t);
+    t._t = setTimeout(() => { t.style.opacity = '0'; }, 2200);
+  }
+  /*]]>*/
+</script>
 </body>
 </html>

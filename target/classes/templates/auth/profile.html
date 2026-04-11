@@ -1,0 +1,201 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<head th:replace="~{shared/layout :: head('Hồ sơ của tôi')}">
+  <style>/* replaced */</style>
+</head>
+<body>
+<nav th:replace="~{shared/layout :: navbar('')}"></nav>
+<div th:replace="~{shared/layout :: flash}"></div>
+
+<style>
+  :root {
+    --profile-surface: #ffffff;
+    --profile-text: #1f2937;
+    --profile-muted: #667085;
+  }
+
+  .profile-card {
+    border: 0;
+    border-radius: 1.5rem;
+    box-shadow: 0 18px 55px rgba(15, 23, 42, 0.08);
+    overflow: hidden;
+  }
+
+  .profile-card-body {
+    position: relative;
+    z-index: 1;
+  }
+
+  .profile-card {
+    background: var(--profile-surface);
+  }
+
+  .profile-section-title {
+    font-size: 0.78rem;
+    font-weight: 800;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--profile-green);
+    margin-bottom: 1rem;
+  }
+
+  .detail-row {
+    display: flex;
+    gap: 1rem;
+    justify-content: space-between;
+    align-items: flex-start;
+    padding: 1rem 0;
+    border-bottom: 1px solid rgba(15, 23, 42, 0.06);
+  }
+
+  .detail-row:last-child {
+    padding-bottom: 0;
+    border-bottom: 0;
+  }
+
+  .detail-label {
+    min-width: 140px;
+    font-size: 0.92rem;
+    font-weight: 700;
+    color: var(--profile-muted);
+  }
+
+  .detail-value {
+    flex: 1;
+    font-weight: 600;
+    color: var(--profile-text);
+    text-align: right;
+  }
+
+  .detail-value-soft {
+    color: var(--profile-muted);
+    font-weight: 500;
+  }
+
+  .skill-tag {
+    background: var(--profile-green-soft);
+    color: var(--profile-green);
+    border-radius: 999px;
+    padding: 0.35rem 0.8rem;
+    font-size: 0.84rem;
+    font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .subtle-box {
+    background: linear-gradient(180deg, #f8fbf8 0%, #ffffff 100%);
+    border: 1px solid rgba(15, 23, 42, 0.06);
+    border-radius: 1rem;
+    padding: 1rem;
+  }
+
+  @media (max-width: 991.98px) {
+    .detail-row {
+      flex-direction: column;
+    }
+
+    .detail-value {
+      text-align: left;
+    }
+  }
+</style>
+
+<main>
+  <div class="container profile-page">
+    <div class="row g-4 align-items-start">
+      <div class="col-lg-4">
+        <div th:replace="~{shared/volunteer-profile-shell :: shell(${user}, ${volunteer}, ${totalRegs}, ${confirmedRegs}, 'profile')}"></div>
+      </div>
+
+      <div class="col-lg-8">
+        <div class="card profile-card mb-4">
+          <div class="card-body profile-card-body p-4 p-xl-5">
+            <div class="d-flex justify-content-between align-items-start gap-3 mb-4">
+              <div>
+                <div class="profile-section-title mb-2">Thông tin cá nhân</div>
+                <h4 class="fw-bold mb-1 mb-sm-2">Xem và quản lý hồ sơ của bạn</h4>
+                <p class="text-muted mb-0">Giữ thông tin cá nhân và hồ sơ tình nguyện luôn cập nhật.</p>
+              </div>
+              <a th:href="@{/auth/profile/edit}" class="btn btn-outline-success quick-link flex-shrink-0">
+                <i class="bi bi-pencil"></i>Sửa hồ sơ
+              </a>
+            </div>
+
+            <div class="subtle-box">
+              <div class="detail-row">
+                <div class="detail-label">Họ và tên</div>
+                <div class="detail-value" th:text="${user.fullName}">—</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Email</div>
+                <div class="detail-value" th:text="${user.email}">—</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Điện thoại</div>
+                <div class="detail-value detail-value-soft" th:text="${user.phoneNumber != null and !#strings.isEmpty(user.phoneNumber) ? user.phoneNumber : 'Chưa cập nhật'}">—</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Địa chỉ</div>
+                <div class="detail-value detail-value-soft" th:text="${user.address != null and !#strings.isEmpty(user.address) ? user.address : 'Chưa cập nhật'}">—</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Tuổi</div>
+                <div class="detail-value detail-value-soft" th:text="${user.age != null and !#strings.isEmpty(user.age) ? user.age : 'Chưa cập nhật'}">—</div>
+              </div>
+              <div class="detail-row">
+                <div class="detail-label">Ngày tham gia</div>
+                <div class="detail-value detail-value-soft"
+                     th:text="${user.registeredDate != null ? #temporals.format(user.registeredDate, 'dd/MM/yyyy') : 'Chưa cập nhật'}">—</div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div th:if="${volunteer != null}" class="card profile-card mb-4">
+          <div class="card-body profile-card-body p-4 p-xl-5">
+            <div class="profile-section-title">Hồ sơ tình nguyện</div>
+
+            <div class="detail-row" th:if="${volunteer.bio != null and !#strings.isEmpty(volunteer.bio)}">
+              <div class="detail-label">Giới thiệu</div>
+              <div class="detail-value detail-value-soft text-start" th:text="${volunteer.bio}">—</div>
+            </div>
+
+            <div class="detail-row align-items-start">
+              <div class="detail-label">Kỹ năng</div>
+              <div class="detail-value text-end">
+                <th:block th:if="${volunteer.skills != null and !#strings.isEmpty(volunteer.skills)}">
+                  <span th:each="skill : ${#strings.arraySplit(volunteer.skills, ',')}"
+                        th:text="${#strings.trim(skill)}"
+                        class="skill-tag me-2 mb-2"></span>
+                </th:block>
+                <span th:unless="${volunteer.skills != null and !#strings.isEmpty(volunteer.skills)}"
+                      class="detail-value-soft fw-normal">Chưa cập nhật</span>
+              </div>
+            </div>
+
+            <div class="detail-row">
+              <div class="detail-label">Trạng thái</div>
+              <div class="detail-value detail-value-soft"
+                   th:text="${volunteer.availability != null ? volunteer.availability : 'Chưa cập nhật'}">—</div>
+            </div>
+
+            <div class="detail-row">
+              <div class="detail-label">Ngày tham gia</div>
+              <div class="detail-value detail-value-soft"
+                   th:text="${volunteer.joinedDate != null ? #temporals.format(volunteer.joinedDate, 'dd/MM/yyyy') : 'Chưa cập nhật'}">—</div>
+            </div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+</main>
+
+<footer th:replace="~{shared/layout :: footer}"></footer>
+<th:block th:replace="~{shared/layout :: scripts}"></th:block>
+</body>
+</html>

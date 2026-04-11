@@ -18,6 +18,15 @@ public interface EventReportRepository extends JpaRepository<EventReport, Intege
         FROM EventReport r
         JOIN FETCH r.event e
         JOIN FETCH r.user u
+        ORDER BY r.reportDate DESC
+    """)
+    List<EventReport> findAllWithDetails();
+
+    @Query("""
+        SELECT r
+        FROM EventReport r
+        JOIN FETCH r.event e
+        JOIN FETCH r.user u
         WHERE LOWER(r.status) = 'pending'
         ORDER BY r.reportDate DESC
     """)

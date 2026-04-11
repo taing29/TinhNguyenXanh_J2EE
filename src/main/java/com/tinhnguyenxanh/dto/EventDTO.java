@@ -38,6 +38,8 @@ public class EventDTO {
 
     private int registeredCount;
     private String images;
+    private boolean isHidden;
+    private String hiddenReason;
 
     // Dùng khi upload ảnh
     private transient MultipartFile imageFile;
