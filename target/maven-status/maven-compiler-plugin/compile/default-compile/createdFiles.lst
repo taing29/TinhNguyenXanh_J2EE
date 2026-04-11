@@ -15,16 +15,18 @@ com\tinhnguyenxanh\repository\EventReportRepository.class
 com\tinhnguyenxanh\entity\Volunteer$VolunteerBuilder.class
 com\tinhnguyenxanh\repository\EventRepository.class
 com\tinhnguyenxanh\service\MomoService.class
-com\tinhnguyenxanh\controller\OrganizationController.class
 com\tinhnguyenxanh\entity\EventCategory.class
 com\tinhnguyenxanh\entity\EventReport.class
 com\tinhnguyenxanh\repository\DonationRepository.class
 com\tinhnguyenxanh\controller\AuthController.class
+com\tinhnguyenxanh\service\SubscriptionService$SubscribeResult.class
+com\tinhnguyenxanh\repository\NewsletterSubscriptionRepository.class
 com\tinhnguyenxanh\entity\Donation.class
 com\tinhnguyenxanh\service\EmailService.class
 com\tinhnguyenxanh\entity\EventRegistration.class
 com\tinhnguyenxanh\dto\EventRegistrationDTO$EventRegistrationDTOBuilder.class
 com\tinhnguyenxanh\entity\EventComment$EventCommentBuilder.class
+com\tinhnguyenxanh\entity\NewsletterSubscription$NewsletterSubscriptionBuilder.class
 com\tinhnguyenxanh\controller\HomeController$1.class
 com\tinhnguyenxanh\repository\EventCategoryRepository.class
 com\tinhnguyenxanh\dto\OrganizationDTO$OrganizationDTOBuilder.class
@@ -53,6 +55,7 @@ com\tinhnguyenxanh\dto\RegisterDTO.class
 com\tinhnguyenxanh\entity\Volunteer.class
 com\tinhnguyenxanh\entity\Event.class
 com\tinhnguyenxanh\entity\EventFavorite.class
+com\tinhnguyenxanh\service\SubscriptionService.class
 com\tinhnguyenxanh\entity\EventComment.class
 com\tinhnguyenxanh\entity\EventFavorite$EventFavoriteId.class
 com\tinhnguyenxanh\TinhNguyenXanhApplication.class
@@ -64,3 +67,4 @@ com\tinhnguyenxanh\entity\Event$EventBuilder.class
 com\tinhnguyenxanh\dto\EventDTO.class
 com\tinhnguyenxanh\config\SecurityConfig.class
 com\tinhnguyenxanh\config\FlexiblePortCustomizer.class
+com\tinhnguyenxanh\entity\NewsletterSubscription.class

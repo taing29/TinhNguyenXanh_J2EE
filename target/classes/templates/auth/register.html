@@ -22,8 +22,7 @@
           <p class="text-muted small">Tham gia cộng đồng tình nguyện xanh</p>
         </div>
 
-        <form th:action="@{/auth/register}" th:object="${registerDTO}" method="post">
-          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+        <form action="/auth/register" th:object="${registerDTO}" method="post">
 
           <div class="mb-3">
             <label class="form-label fw-semibold">Họ và tên <span class="text-danger">*</span></label>
