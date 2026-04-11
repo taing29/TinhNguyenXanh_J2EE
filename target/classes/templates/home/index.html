@@ -1,140 +1,487 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org"
       xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
-<head th:replace="~{shared/layout :: head('Trang chủ')}"></head>
-<body>
 
+<head th:replace="~{shared/layout :: head('Trang chủ')}">
+  <style>/* replaced by fragment */</style>
+</head>
+
+<body>
 <nav th:replace="~{shared/layout :: navbar('home')}"></nav>
 <div th:replace="~{shared/layout :: flash}"></div>
 
+<style>
+  :root {
+    --green: #2e7d32;
+    --green-dark: #1b5e20;
+    --green-light: #f0fdf4;
+    --green-border: #bbf7d0;
+    --text: #0f172a;
+    --muted: #64748b;
+    --border: #e5e7eb;
+  }
+
+  /* ─── HERO ─── */
+  .hero {
+    background: linear-gradient(135deg, #1b5e20 0%, #2e7d32 55%, #43a047 100%);
+    padding: 90px 0 78px;
+    text-align: center;
+    color: #fff;
+    position: relative;
+    overflow: hidden;
+  }
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background:
+      radial-gradient(ellipse at 20% 60%, rgba(255,255,255,.07) 0%, transparent 50%),
+      radial-gradient(ellipse at 80% 20%, rgba(255,255,255,.05) 0%, transparent 40%);
+  }
+  .hero-label {
+    font-size: .8rem;
+    letter-spacing: .12em;
+    opacity: .7;
+    margin-bottom: .5rem;
+  }
+  .hero-title {
+    font-size: clamp(2rem, 5vw, 3rem);
+    font-weight: 900;
+    margin-bottom: .65rem;
+    text-shadow: 0 2px 8px rgba(0,0,0,.15);
+  }
+  .hero-sub {
+    font-size: 1rem;
+    opacity: .88;
+    margin-bottom: 2.25rem;
+  }
+  .btn-hw {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .72rem 1.85rem;
+    border-radius: 50px;
+    font-weight: 700;
+    font-size: .95rem;
+    background: #fff;
+    color: var(--green);
+    border: none;
+    text-decoration: none;
+    transition: all .2s;
+  }
+  .btn-hw:hover {
+    background: var(--green-light);
+    color: var(--green-dark);
+    transform: translateY(-2px);
+  }
+  .btn-ho {
+    display: inline-flex;
+    align-items: center;
+    gap: .4rem;
+    padding: .72rem 1.85rem;
+    border-radius: 50px;
+    font-weight: 600;
+    font-size: .95rem;
+    background: transparent;
+    color: #fff;
+    border: 2px solid rgba(255,255,255,.55);
+    text-decoration: none;
+    transition: all .2s;
+  }
+  .btn-ho:hover {
+    background: rgba(255,255,255,.13);
+    color: #fff;
+  }
+
+  /* ─── EVENTS SECTION ─── */
+  .events-section {
+    background: #f8fafb;
+    padding: 3.5rem 0 4rem;
+  }
+  .sec-title {
+    font-size: 1.45rem;
+    font-weight: 800;
+    color: var(--green);
+    display: flex;
+    align-items: center;
+    gap: .45rem;
+    margin-bottom: .1rem;
+  }
+  .sec-sub { font-size: .83rem; color: var(--muted); }
+
+  /* Event card — thiết kế tĩnh, không cần JS */
+  .ev-card {
+    background: #fff;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    overflow: hidden;
+    box-shadow: 0 2px 10px rgba(0,0,0,.07);
+    transition: transform .22s, box-shadow .22s;
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+  }
+  .ev-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 30px rgba(0,0,0,.13);
+  }
+  .ev-img-wrap { position: relative; overflow: hidden; }
+  .ev-img {
+    width: 100%;
+    height: 190px;
+    object-fit: cover;
+    display: block;
+    transition: transform .3s;
+  }
+  .ev-card:hover .ev-img { transform: scale(1.05); }
+
+  /* Expired overlay */
+  .ev-expired-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(0,0,0,.32);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ev-expired-label {
+    background: rgba(0,0,0,.55);
+    color: #fff;
+    border-radius: 20px;
+    font-size: .75rem;
+    font-weight: 700;
+    padding: .27rem .8rem;
+    display: flex;
+    align-items: center;
+    gap: .3rem;
+  }
+
+  /* Category badge */
+  .ev-cat {
+    position: absolute;
+    bottom: .6rem;
+    left: .6rem;
+    background: rgba(255,255,255,.93);
+    color: var(--green);
+    border-radius: 20px;
+    font-size: .7rem;
+    font-weight: 700;
+    padding: .15rem .58rem;
+  }
+
+  /* Favorite button — state set bởi server (class favorited) */
+  .btn-fav {
+    position: absolute;
+    top: .55rem;
+    right: .55rem;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    background: rgba(255,255,255,.92);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all .18s;
+    box-shadow: 0 1px 5px rgba(0,0,0,.15);
+  }
+  .btn-fav:hover { background: #fff; transform: scale(1.12); }
+  .btn-fav i { font-size: .93rem; color: #d1d5db; transition: color .18s; }
+  .btn-fav.favorited i { color: #ef4444; }
+
+  /* Card body */
+  .ev-body {
+    padding: 1rem 1rem .85rem;
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+  }
+  .ev-title {
+    font-weight: 700;
+    font-size: .95rem;
+    line-height: 1.35;
+    color: var(--text);
+    margin-bottom: .4rem;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .ev-meta {
+    font-size: .79rem;
+    color: var(--muted);
+    display: flex;
+    align-items: center;
+    gap: .32rem;
+    margin-bottom: .24rem;
+  }
+  .ev-progress {
+    height: 5px;
+    border-radius: 5px;
+    background: #e5e7eb;
+    margin: .65rem 0 .75rem;
+  }
+  .ev-progress-fill {
+    height: 100%;
+    border-radius: 5px;
+    background: var(--green);
+  }
+  .ev-foot {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-top: auto;
+  }
+  .ev-count { font-size: .79rem; color: var(--muted); }
+  .btn-detail {
+    background: var(--green);
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: .35rem .82rem;
+    font-size: .8rem;
+    font-weight: 600;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: .28rem;
+    transition: background .18s;
+  }
+  .btn-detail:hover { background: var(--green-dark); color: #fff; }
+
+  /* ─── STATS ─── */
+  .stats-section { padding: 3rem 0; background: #fff; }
+  .stat-card {
+    text-align: center;
+    padding: 1.75rem 1rem;
+    border: 1px solid var(--border);
+    border-radius: 14px;
+    transition: all .2s;
+  }
+  .stat-card:hover {
+    box-shadow: 0 6px 22px rgba(0,0,0,.08);
+    transform: translateY(-3px);
+  }
+  .stat-card i { font-size: 2rem; color: var(--green); margin-bottom: .55rem; display: block; }
+  .stat-num { font-size: 1.8rem; font-weight: 800; color: var(--text); line-height: 1; }
+  .stat-lbl { font-size: .82rem; color: var(--muted); margin-top: .25rem; }
+
+  /* Toast */
+  #fav-toast {
+    position: fixed;
+    bottom: 1.5rem;
+    right: 1.5rem;
+    background: var(--green);
+    color: #fff;
+    padding: .58rem 1.15rem;
+    border-radius: 10px;
+    z-index: 9999;
+    font-size: .86rem;
+    font-weight: 500;
+    box-shadow: 0 4px 16px rgba(0,0,0,.18);
+    opacity: 0;
+    transition: opacity .3s;
+    pointer-events: none;
+  }
+</style>
+
 <main>
+
   <!-- HERO -->
-  <section style="background:linear-gradient(135deg,#1b5e20,#2e7d32,#43a047);color:#fff;padding:100px 0" class="text-center">
-    <div class="container">
-      <h1 class="display-4 fw-bold mb-3">🌿 Tình Nguyện Xanh</h1>
-      <p class="lead mb-4">Kết nối trái tim – Lan toả yêu thương – Xây dựng cộng đồng xanh</p>
-      <a th:href="@{/events}" class="btn btn-light btn-lg me-3">Khám phá sự kiện</a>
-      <a sec:authorize="hasRole('VOLUNTEER')" th:href="@{/organizations/register}" class="btn btn-outline-light btn-lg">Đăng ký tổ chức</a>
-      <a sec:authorize="!isAuthenticated()" th:href="@{/auth/login}" class="btn btn-outline-light btn-lg">Đăng nhập để đăng ký tổ chức</a>
+  <section class="hero">
+    <div class="container position-relative">
+      <p class="hero-label">🌿 NỀN TẢNG TÌNH NGUYỆN</p>
+      <h1 class="hero-title">Tình Nguyện Xanh</h1>
+      <p class="hero-sub">Kết nối trái tim – Lan toả yêu thương – Xây dựng cộng đồng xanh</p>
+      <div class="d-flex gap-3 justify-content-center flex-wrap">
+        <a th:href="@{/events}" class="btn-hw">
+          <i class="bi bi-calendar-event"></i> Khám phá sự kiện
+        </a>
+        <a sec:authorize="hasRole('VOLUNTEER')"
+           th:href="@{/organizations/register}" class="btn-ho">
+          <i class="bi bi-building-add"></i> Đăng ký tổ chức
+        </a>
+        <a sec:authorize="!isAuthenticated()"
+           th:href="@{/auth/register}" class="btn-ho">
+          <i class="bi bi-person-plus"></i> Tham gia ngay
+        </a>
+      </div>
     </div>
   </section>
 
-  <!-- EVENTS -->
-  <section class="py-5">
+  <!-- SỰ KIỆN NỔI BẬT — 3 card tĩnh, không JS layout -->
+  <section class="events-section">
     <div class="container">
-      <div class="d-flex justify-content-between align-items-center mb-4">
-        <h2 class="fw-bold text-success"><i class="bi bi-calendar-event me-2"></i>Sự kiện nổi bật</h2>
-        <a th:href="@{/events}" class="btn btn-outline-success btn-sm">Xem tất cả</a>
+
+      <div class="d-flex justify-content-between align-items-end mb-4 flex-wrap gap-2">
+        <div>
+          <h2 class="sec-title">
+            <i class="bi bi-fire text-warning"></i> Sự kiện nổi bật
+          </h2>
+          <p class="sec-sub mb-0">3 hoạt động tình nguyện được đăng ký nhiều nhất</p>
+        </div>
+        <a th:href="@{/events}" class="btn btn-outline-success btn-sm rounded-pill">
+          Xem tất cả <i class="bi bi-arrow-right ms-1"></i>
+        </a>
       </div>
-      <div class="row g-4">
-        <div th:each="event : ${approvedEvents}" class="col-md-4">
-          <div class="card h-100 border-0" style="box-shadow:0 2px 8px rgba(0,0,0,.1);transition:.3s" onmouseover="this.style.transform='translateY(-4px)';this.style.boxShadow='0 8px 24px rgba(0,0,0,.15)'" onmouseout="this.style.transform='';this.style.boxShadow='0 2px 8px rgba(0,0,0,.1)'">
-            <img th:if="${event.images != null}" th:src="${event.images}" class="card-img-top" style="height:200px;object-fit:cover" alt="event"/>
-            <img th:unless="${event.images != null}" src="https://via.placeholder.com/400x200?text=No+Image" class="card-img-top" style="height:200px;object-fit:cover" alt="event"/>
-            <div class="card-body">
-              <span class="badge bg-success mb-2" th:text="${event.categoryName}">Category</span>
-              <h5 class="card-title" th:text="${event.title}">Tên sự kiện</h5>
-              <p class="text-muted small"><i class="bi bi-geo-alt me-1"></i><span th:text="${event.location}">Địa điểm</span></p>
-              <p class="text-muted small"><i class="bi bi-calendar me-1"></i>
-                <span th:text="${#temporals.format(event.startTime,'dd/MM/yyyy')}">Ngày</span>
-              </p>
-              <div class="d-flex justify-content-between align-items-center mt-2">
-                <small class="text-muted"><i class="bi bi-people me-1"></i>
-                  <span th:text="${event.registeredCount + '/' + event.maxVolunteers}">0/0</span>
-                </small>
-                <div class="d-flex gap-1">
-                  <button sec:authorize="isAuthenticated()"
-                          class="btn-fav btn btn-outline-danger btn-sm"
-                          th:attr="data-event-id=${event.id}"
-                          onclick="toggleFav(this)" title="Yêu thích">
-                    <i class="bi bi-heart"></i>
-                  </button>
-                  <a th:href="@{/events/{id}(id=${event.id})}" class="btn btn-primary btn-sm">Chi tiết</a>
+
+      <!-- Bootstrap row — 3 cột cố định, không cần JS nào -->
+      <div class="row g-4" th:if="${!#lists.isEmpty(approvedEvents)}">
+        <div th:each="ev : ${approvedEvents}" class="col-md-4">
+          <div class="ev-card">
+            <div class="ev-img-wrap">
+              <img th:src="${ev.images != null and !#strings.isEmpty(ev.images)
+                             ? ev.images
+                             : 'https://placehold.co/420x190/e8f5e9/2e7d32?text=No+Image'}"
+                   class="ev-img"
+                   alt="event"
+                   onerror="this.src='https://placehold.co/420x190/e8f5e9/2e7d32?text=No+Image'"/>
+
+              <!-- Expired: dùng expiredIds từ controller, không gọi temporals.createNow -->
+              <div th:if="${expiredIds.contains(ev.id)}" class="ev-expired-overlay">
+                <span class="ev-expired-label">
+                  <i class="bi bi-clock-history"></i> Đã kết thúc
+                </span>
+              </div>
+
+              <span class="ev-cat" th:text="${ev.categoryName}">Danh mục</span>
+
+              <!-- Favorite: class 'favorited' set đúng từ server khi load trang -->
+              <button sec:authorize="isAuthenticated()"
+                      class="btn-fav"
+                      th:classappend="${favoritedIds.contains(ev.id)} ? ' favorited' : ''"
+                      th:attr="data-event-id=${ev.id}"
+                      onclick="toggleFav(this)"
+                      title="Yêu thích">
+                <i class="bi bi-heart-fill"></i>
+              </button>
+            </div>
+
+            <div class="ev-body">
+              <div class="ev-title" th:text="${ev.title}">Tên sự kiện</div>
+              <div class="ev-meta">
+                <i class="bi bi-calendar3"></i>
+                <span th:text="${#temporals.format(ev.startTime,'dd/MM/yyyy HH:mm')}">--</span>
+              </div>
+              <div class="ev-meta">
+                <i class="bi bi-geo-alt"></i>
+                <span class="text-truncate" th:text="${ev.location}">--</span>
+              </div>
+              <div class="ev-meta">
+                <i class="bi bi-building"></i>
+                <span class="text-truncate" th:text="${ev.organizationName}">--</span>
+              </div>
+              <div class="ev-progress" th:if="${ev.maxVolunteers > 0}">
+                <div class="ev-progress-fill"
+                     th:style="'width:' + (${ev.registeredCount * 100 / ev.maxVolunteers}) + '%'">
                 </div>
+              </div>
+              <div class="ev-foot">
+                <span class="ev-count">
+                  <i class="bi bi-people me-1"></i>
+                  <span th:text="${ev.registeredCount + '/' + ev.maxVolunteers}">0/0</span> TNV
+                </span>
+                <a th:href="@{/events/{id}(id=${ev.id})}" class="btn-detail">
+                  Chi tiết <i class="bi bi-arrow-right"></i>
+                </a>
               </div>
             </div>
           </div>
         </div>
       </div>
-      <div th:if="${#lists.isEmpty(approvedEvents)}" class="text-center py-5 text-muted">
-        <i class="bi bi-calendar-x display-4"></i>
-        <p class="mt-3">Chưa có sự kiện nào</p>
+
+      <!-- Không có sự kiện -->
+      <div th:if="${#lists.isEmpty(approvedEvents)}"
+           class="text-center py-5 text-muted">
+        <i class="bi bi-calendar-x"
+           style="font-size:2.8rem;display:block;margin-bottom:.9rem;color:#d1d5db;"></i>
+        <p class="mb-0">Chưa có sự kiện nào. Quay lại sau nhé!</p>
       </div>
+
     </div>
   </section>
 
   <!-- STATS -->
-  <section class="py-5 bg-light">
-    <div class="container text-center">
-      <div class="row g-4">
-        <div class="col-md-3">
-          <div class="p-4">
-            <i class="bi bi-calendar-check display-4 text-success"></i>
-            <h3 class="fw-bold mt-2" th:text="${approvedEvents.size()}">0</h3>
-            <p class="text-muted">Sự kiện đang diễn ra</p>
+  <section class="stats-section">
+    <div class="container">
+      <div class="row g-3">
+        <div class="col-6 col-md-3">
+          <div class="stat-card">
+            <i class="bi bi-calendar-check"></i>
+            <div class="stat-num" th:text="${#lists.size(approvedEvents)}">0</div>
+            <div class="stat-lbl">Sự kiện nổi bật</div>
           </div>
         </div>
-        <div class="col-md-3">
-          <div class="p-4">
-            <i class="bi bi-people display-4 text-success"></i>
-            <h3 class="fw-bold mt-2">500+</h3>
-            <p class="text-muted">Tình nguyện viên</p>
+        <div class="col-6 col-md-3">
+          <div class="stat-card">
+            <i class="bi bi-people"></i>
+            <div class="stat-num">500+</div>
+            <div class="stat-lbl">Tình nguyện viên</div>
           </div>
         </div>
-        <div class="col-md-3">
-          <div class="p-4">
-            <i class="bi bi-building display-4 text-success"></i>
-            <h3 class="fw-bold mt-2">50+</h3>
-            <p class="text-muted">Tổ chức đối tác</p>
+        <div class="col-6 col-md-3">
+          <div class="stat-card">
+            <i class="bi bi-building"></i>
+            <div class="stat-num">50+</div>
+            <div class="stat-lbl">Tổ chức đối tác</div>
           </div>
         </div>
-        <div class="col-md-3">
-          <div class="p-4">
-            <i class="bi bi-heart display-4 text-success"></i>
-            <h3 class="fw-bold mt-2">10,000+</h3>
-            <p class="text-muted">Lượt tình nguyện</p>
+        <div class="col-6 col-md-3">
+          <div class="stat-card">
+            <i class="bi bi-heart"></i>
+            <div class="stat-num">10K+</div>
+            <div class="stat-lbl">Lượt tình nguyện</div>
           </div>
         </div>
       </div>
     </div>
   </section>
+
 </main>
 
+<div id="fav-toast"></div>
+
 <footer th:replace="~{shared/layout :: footer}"></footer>
+
+<!-- Bootstrap bundle TRƯỚC, script của trang SAU -->
 <th:block th:replace="~{shared/layout :: scripts}"></th:block>
-<style>
-.btn-fav.favorited { background:#dc3545;border-color:#dc3545;color:#fff; }
-.btn-fav:not(.favorited) { background:transparent; }
-</style>
+
+<!-- Chỉ có AJAX favorite — không có JS layout nào cả -->
 <script th:inline="javascript">
-const csrfToken = /*[[${_csrf != null ? _csrf.token : ''}]]*/ '';
-const csrfHeader = /*[[${_csrf != null ? _csrf.headerName : 'X-CSRF-TOKEN'}]]*/ 'X-CSRF-TOKEN';
-async function toggleFav(btn) {
-  const eventId = btn.dataset.eventId;
-  try {
-    const res = await fetch(`/events/${eventId}/favorite/ajax`, {
-      method:'POST', headers:{[csrfHeader]:csrfToken,'Content-Type':'application/json'}
-    });
-    if (res.ok) {
-      const data = await res.json();
+  /*<![CDATA[*/
+  var _csrf = /*[[${_csrf != null ? _csrf.token : ''}]]*/ '';
+  var _hdr  = /*[[${_csrf != null ? _csrf.headerName : 'X-CSRF-TOKEN'}]]*/ 'X-CSRF-TOKEN';
+
+  function toggleFav(btn) {
+    var id = btn.dataset.eventId;
+    btn.disabled = true;
+    fetch('/events/' + id + '/favorite/ajax', {
+      method: 'POST',
+      headers: { [_hdr]: _csrf, 'Content-Type': 'application/json' }
+    })
+    .then(function(res) {
+      if (res.status === 401) { window.location.href = '/auth/login'; return null; }
+      return res.ok ? res.json() : null;
+    })
+    .then(function(data) {
+      if (!data) return;
       btn.classList.toggle('favorited', data.favorited);
-      btn.querySelector('i').className = data.favorited ? 'bi bi-heart-fill' : 'bi bi-heart';
-      showToast(data.favorited ? 'Đã thêm vào yêu thích ❤️' : 'Đã bỏ yêu thích');
-    }
-  } catch(e) {}
-}
-function showToast(msg) {
-  let t = document.getElementById('fav-toast');
-  if (!t) {
-    t = document.createElement('div');
-    t.id = 'fav-toast';
-    t.style.cssText = 'position:fixed;bottom:24px;right:24px;background:#2e7d32;color:#fff;padding:10px 20px;border-radius:8px;z-index:9999;font-size:.9rem;box-shadow:0 4px 12px rgba(0,0,0,.2);transition:opacity .3s';
-    document.body.appendChild(t);
+      showToast(data.favorited ? '❤️ Đã thêm vào yêu thích' : 'Đã bỏ yêu thích');
+    })
+    .catch(function(e) { console.error(e); })
+    .finally(function() { btn.disabled = false; });
   }
-  t.textContent = msg; t.style.opacity = '1';
-  clearTimeout(t._timer);
-  t._timer = setTimeout(() => { t.style.opacity = '0'; }, 2500);
-}
+
+  function showToast(msg) {
+    var t = document.getElementById('fav-toast');
+    t.textContent = msg;
+    t.style.opacity = '1';
+    clearTimeout(t._timer);
+    t._timer = setTimeout(function() { t.style.opacity = '0'; }, 2400);
+  }
+  /*]]>*/
 </script>
 </body>
 </html>

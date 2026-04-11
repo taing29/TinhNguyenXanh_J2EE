@@ -19,6 +19,8 @@ import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 @RequestMapping("/events")
@@ -38,6 +40,7 @@ public class EventController {
     @GetMapping
     public String listEvents(@RequestParam(defaultValue = "0") int page,
                              @RequestParam(required = false) String category,
+                             @AuthenticationPrincipal CustomUserDetails userDetails,
                              Model model) {
         int pageSize = 6;
         var all = eventService.getApprovedEvents();
@@ -57,6 +60,26 @@ public class EventController {
         model.addAttribute("currentPage", page);
         model.addAttribute("totalPages", totalPages);
         model.addAttribute("totalEvents", total);
+
+        // Truyền danh sách eventId đã yêu thích để hiển thị đúng icon
+        if (userDetails != null) {
+            Set<Integer> favIds = favoriteRepo.findByUser_Id(userDetails.getId())
+                    .stream()
+                    .map(ef -> ef.getEvent().getId())
+                    .collect(Collectors.toSet());
+            model.addAttribute("favoritedIds", favIds);
+        } else {
+            model.addAttribute("favoritedIds", Set.of());
+        }
+
+        // Tập hợp các id event đã kết thúc
+        LocalDateTime now = LocalDateTime.now();
+        Set<Integer> expiredIds = paged.stream()
+                .filter(e -> e.getEndTime() != null && e.getEndTime().isBefore(now))
+                .map(e -> e.getId())
+                .collect(Collectors.toSet());
+        model.addAttribute("expiredIds", expiredIds);
+
         return "event/index";
     }
 

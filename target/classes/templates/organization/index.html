@@ -1,83 +1,311 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
 <head th:replace="~{shared/layout :: head('Tổ chức')}">
-  <style>
-    .org-card { border:none;box-shadow:0 2px 12px rgba(0,0,0,.08);transition:.3s; }
-    .org-card:hover { transform:translateY(-4px);box-shadow:0 8px 24px rgba(0,0,0,.15); }
-    .page-link { color:#2e7d32; }
-    .page-item.active .page-link { background:#2e7d32;border-color:#2e7d32;color:#fff; }
-  </style>
+  <style>/* replaced */</style>
 </head>
+
 <body>
 <nav th:replace="~{shared/layout :: navbar('organizations')}"></nav>
 <div th:replace="~{shared/layout :: flash}"></div>
-<main>
-  <div class="container py-5">
-    <div class="d-flex justify-content-between align-items-center mb-4">
-      <div>
-        <h2 class="fw-bold text-success mb-0"><i class="bi bi-building me-2"></i>Tổ chức đối tác</h2>
-        <small class="text-muted" th:text="${totalOrgs} + ' tổ chức'"></small>
-      </div>
-      <a th:href="@{/organizations/register}" class="btn btn-outline-success btn-sm">
-        <i class="bi bi-building-add me-1"></i>Đăng ký tổ chức
-      </a>
-    </div>
 
-    <div class="row g-4">
-      <div th:each="org : ${organizations}" class="col-md-4">
-        <div class="card org-card h-100 p-3">
-          <div class="d-flex align-items-center mb-3">
-            <img th:if="${org.avatarUrl != null}" th:src="${org.avatarUrl}"
-                 class="rounded-circle me-3" style="width:60px;height:60px;object-fit:cover" alt="org"/>
-            <div th:unless="${org.avatarUrl != null}"
-                 class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center me-3"
-                 style="width:60px;height:60px;font-size:1.5rem;font-weight:700"
-                 th:text="${org.name.substring(0,1)}">O</div>
-            <div>
-              <h5 class="mb-0 fw-bold" th:text="${org.name}"></h5>
-              <small class="text-muted" th:text="${org.organizationType}"></small>
-            </div>
-          </div>
-          <p class="text-muted small flex-grow-1" th:text="${#strings.abbreviate(org.description, 100)}"></p>
-          <div class="d-flex justify-content-between align-items-center mt-auto">
-            <div th:if="${org.averageRating != null and org.totalReviews != null and org.totalReviews > 0}"
-                 class="text-warning small">
-              <i class="bi bi-star-fill"></i>
-              <span th:text="${#numbers.formatDecimal(org.averageRating,1,1)}"></span>
-              <span class="text-muted" th:text="'(' + ${org.totalReviews} + ')'"></span>
-            </div>
-            <div th:unless="${org.averageRating != null and org.totalReviews != null and org.totalReviews > 0}"></div>
-            <a th:href="@{/organizations/{id}(id=${org.id})}" class="btn btn-primary btn-sm">Xem chi tiết</a>
-          </div>
+<style>
+  :root {
+    --green:#2e7d32; --green-dark:#1b5e20; --green-light:#f0fdf4;
+    --green-border:#bbf7d0; --text:#0f172a; --muted:#64748b; --border:#e5e7eb;
+    --radius:16px; --shadow:0 2px 12px rgba(0,0,0,.07);
+  }
+
+  /* Page wrapper */
+  .orgs-wrap { background:#f8fafb; min-height:100vh; }
+
+  /* Banner header */
+  .orgs-banner {
+    background: linear-gradient(135deg, var(--green-dark) 0%, var(--green) 100%);
+    padding: 2.75rem 0 2.25rem; color:#fff;
+  }
+  .orgs-banner h1 { font-size:1.75rem; font-weight:800; margin-bottom:.3rem; }
+  .orgs-banner p  { opacity:.85; font-size:.95rem; margin-bottom:0; }
+
+  /* Search bar in banner */
+  .banner-search { position:relative; max-width:400px; }
+  .banner-search input {
+    border:none; border-radius:50px; padding:.65rem 1.2rem .65rem 2.8rem;
+    font-size:.9rem; width:100%; box-shadow:0 2px 12px rgba(0,0,0,.15);
+  }
+  .banner-search input:focus { outline:none; box-shadow:0 0 0 3px rgba(255,255,255,.3); }
+  .banner-search .s-icon { position:absolute; left:.95rem; top:50%; transform:translateY(-50%); color:#9ca3af; }
+  .banner-search .s-btn  {
+    position:absolute; right:.35rem; top:50%; transform:translateY(-50%);
+    background:var(--green); color:#fff; border:none; border-radius:50px;
+    padding:.32rem .9rem; font-size:.82rem; font-weight:600; cursor:pointer;
+  }
+
+  /* Stats strip */
+  .stats-strip { background:#fff; border-bottom:1px solid var(--border); padding:.85rem 0; }
+  .strip-item { text-align:center; }
+  .strip-num  { font-size:1.3rem; font-weight:800; color:var(--green); line-height:1; }
+  .strip-lbl  { font-size:.74rem; color:var(--muted); margin-top:.1rem; }
+  .strip-sep  { width:1px; background:var(--border); align-self:stretch; margin:.15rem 0; }
+
+  /* Main area */
+  .orgs-main { padding:2rem 0 4rem; }
+
+  /* Org card */
+  .org-card {
+    background:#fff; border:1px solid var(--border); border-radius:var(--radius);
+    box-shadow:var(--shadow); overflow:hidden;
+    transition:transform .2s, box-shadow .2s;
+    display:flex; flex-direction:column; height:100%;
+  }
+  .org-card:hover { transform:translateY(-4px); box-shadow:0 8px 28px rgba(0,0,0,.12); }
+
+  /* Card top color band */
+  .org-card-top {
+    height:6px; background:linear-gradient(90deg, var(--green) 0%, #66bb6a 100%);
+  }
+
+  .org-card-body { padding:1.3rem 1.3rem 1rem; display:flex; flex-direction:column; flex:1; }
+
+  /* Avatar */
+  .org-avatar-wrap { display:flex; align-items:flex-start; gap:.85rem; margin-bottom:.85rem; }
+  .org-avatar {
+    width:58px; height:58px; border-radius:12px; object-fit:cover;
+    border:2px solid var(--green-border); flex-shrink:0;
+  }
+  .org-avatar-placeholder {
+    width:58px; height:58px; border-radius:12px;
+    background:var(--green-light); border:2px solid var(--green-border);
+    display:flex; align-items:center; justify-content:center;
+    font-size:1.5rem; font-weight:800; color:var(--green); flex-shrink:0;
+  }
+  .org-name { font-weight:800; font-size:1rem; color:var(--text); margin-bottom:.2rem; line-height:1.25; }
+  .org-type-badge {
+    display:inline-flex; align-items:center;
+    background:var(--green-light); color:var(--green);
+    border:1px solid var(--green-border); border-radius:20px;
+    font-size:.7rem; font-weight:700; padding:.15rem .55rem;
+  }
+  .org-verified {
+    display:inline-flex; align-items:center; gap:.25rem;
+    background:#dcfce7; color:var(--green); border:1px solid var(--green-border);
+    border-radius:20px; font-size:.7rem; font-weight:700; padding:.15rem .55rem; margin-left:.3rem;
+  }
+
+  .org-desc {
+    font-size:.84rem; color:var(--muted); line-height:1.6;
+    display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden;
+    flex:1; margin-bottom:.85rem;
+  }
+
+  /* Focus area tags */
+  .focus-tags { display:flex; flex-wrap:wrap; gap:.3rem; margin-bottom:.85rem; }
+  .focus-tag {
+    background:var(--green-light); color:var(--green); border-radius:20px;
+    font-size:.68rem; font-weight:600; padding:.12rem .5rem;
+  }
+
+  /* Card footer */
+  .org-card-footer {
+    border-top:1px solid var(--border); padding:.85rem 1.3rem;
+    display:flex; justify-content:space-between; align-items:center;
+  }
+  .org-stats { display:flex; gap:1rem; }
+  .org-stat  { font-size:.78rem; color:var(--muted); display:flex; align-items:center; gap:.3rem; }
+  .org-stat i { color:var(--green); }
+  .org-rating {
+    display:flex; align-items:center; gap:.25rem;
+    font-size:.8rem; font-weight:700; color:#f59e0b;
+  }
+  .org-rating span { color:var(--muted); font-weight:400; }
+  .btn-view {
+    background:var(--green); color:#fff; border:none; border-radius:8px;
+    padding:.35rem .85rem; font-size:.8rem; font-weight:600;
+    text-decoration:none; display:inline-flex; align-items:center; gap:.3rem;
+    transition:background .18s;
+  }
+  .btn-view:hover { background:var(--green-dark); color:#fff; }
+
+  /* Empty */
+  .empty-box { text-align:center; padding:4rem 2rem; color:var(--muted); }
+  .empty-box i { font-size:3rem; display:block; margin-bottom:1rem; color:#d1d5db; }
+
+  /* Pagination */
+  .page-link { color:var(--green); border-radius:8px !important; margin:0 2px; }
+  .page-item.active .page-link { background:var(--green); border-color:var(--green); color:#fff; }
+  .page-link:hover:not(.disabled) { color:var(--green-dark); background:var(--green-light); }
+
+  @media (max-width:767px) {
+    .orgs-banner h1 { font-size:1.35rem; }
+    .banner-search  { max-width:100%; }
+  }
+</style>
+
+<main class="orgs-wrap">
+
+  <!-- Banner -->
+  <div class="orgs-banner">
+    <div class="container">
+      <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center gap-3">
+        <div>
+          <h1><i class="bi bi-building me-2"></i>Tổ chức đối tác</h1>
+          <p th:text="${totalOrgs} + ' tổ chức đang hoạt động'">0 tổ chức</p>
+        </div>
+        <!-- Search -->
+        <form th:action="@{/organizations}" method="get" class="banner-search">
+          <i class="bi bi-search s-icon"></i>
+          <input name="q" th:value="${searchQuery}" placeholder="Tìm tên tổ chức..." autocomplete="off"/>
+          <button type="submit" class="s-btn">Tìm</button>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Stats strip -->
+  <div class="stats-strip">
+    <div class="container">
+      <div class="d-flex justify-content-center gap-5 align-items-center flex-wrap">
+        <div class="strip-item">
+          <div class="strip-num" th:text="${totalOrgs}">0</div>
+          <div class="strip-lbl">Tổ chức</div>
+        </div>
+        <div class="strip-sep"></div>
+        <div class="strip-item">
+          <div class="strip-num">500+</div>
+          <div class="strip-lbl">Tình nguyện viên</div>
+        </div>
+        <div class="strip-sep"></div>
+        <div class="strip-item">
+          <div class="strip-num">1K+</div>
+          <div class="strip-lbl">Sự kiện tổ chức</div>
+        </div>
+        <div class="strip-sep"></div>
+        <div class="strip-item">
+          <div class="strip-num">10K+</div>
+          <div class="strip-lbl">Lượt tham gia</div>
         </div>
       </div>
     </div>
+  </div>
 
-    <p th:if="${#lists.isEmpty(organizations)}" class="text-center text-muted py-5">
-      Chưa có tổ chức nào.
-    </p>
+  <!-- Main -->
+  <div class="orgs-main">
+    <div class="container">
 
-    <!-- Pagination -->
-    <nav th:if="${totalPages > 1}" class="mt-5 d-flex justify-content-center">
-      <ul class="pagination">
-        <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
-          <a class="page-link" th:href="@{/organizations(page=${currentPage - 1})}">
-            <i class="bi bi-chevron-left"></i>
-          </a>
-        </li>
-        <li th:each="i : ${#numbers.sequence(0, totalPages - 1)}"
-            class="page-item" th:classappend="${i == currentPage} ? 'active'">
-          <a class="page-link" th:href="@{/organizations(page=${i})}" th:text="${i + 1}"></a>
-        </li>
-        <li class="page-item" th:classappend="${currentPage == totalPages - 1} ? 'disabled'">
-          <a class="page-link" th:href="@{/organizations(page=${currentPage + 1})}">
-            <i class="bi bi-chevron-right"></i>
-          </a>
-        </li>
-      </ul>
-    </nav>
+      <!-- Header row -->
+      <div class="d-flex justify-content-between align-items-center mb-4 flex-wrap gap-2">
+        <p class="mb-0 text-muted small" th:if="${organizations != null}">
+          Hiển thị <strong th:text="${#lists.size(organizations)}">0</strong> tổ chức
+        </p>
+        <a th:href="@{/organizations/register}" class="btn btn-outline-success btn-sm rounded-pill">
+          <i class="bi bi-building-add me-1"></i>Đăng ký tổ chức
+        </a>
+      </div>
+
+      <!-- Grid -->
+      <div class="row g-4" th:if="${!#lists.isEmpty(organizations)}">
+        <div th:each="org : ${organizations}" class="col-md-6 col-lg-4">
+          <div class="org-card">
+            <div class="org-card-top"></div>
+            <div class="org-card-body">
+              <!-- Avatar + name -->
+              <div class="org-avatar-wrap">
+                <img th:if="${org.avatarUrl != null and !#strings.isEmpty(org.avatarUrl)}"
+                     th:src="${org.avatarUrl}" class="org-avatar" alt="logo"/>
+                <div th:unless="${org.avatarUrl != null and !#strings.isEmpty(org.avatarUrl)}"
+                     class="org-avatar-placeholder"
+                     th:text="${#strings.toUpperCase(#strings.substring(org.name,0,1))}">O</div>
+                <div>
+                  <div class="org-name" th:text="${org.name}">Tên tổ chức</div>
+                  <div class="mt-1">
+                    <span class="org-type-badge" th:text="${org.organizationType}">Loại</span>
+                    <span th:if="${org.verified}" class="org-verified">
+                      <i class="bi bi-check-circle-fill"></i> Đã xác minh
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <!-- Description -->
+              <p class="org-desc"
+                 th:text="${org.description != null ? org.description : 'Chưa có mô tả.'}">Mô tả</p>
+
+              <!-- Focus areas -->
+              <div class="focus-tags"
+                   th:if="${org.focusAreas != null and !#lists.isEmpty(org.focusAreas)}">
+                <span th:each="area,iter : ${org.focusAreas}"
+                      th:if="${iter.index < 3}"
+                      class="focus-tag" th:text="${area}">Lĩnh vực</span>
+                <span th:if="${#lists.size(org.focusAreas) > 3}"
+                      class="focus-tag"
+                      th:text="'+' + (${#lists.size(org.focusAreas) - 3})">+N</span>
+              </div>
+            </div>
+
+            <!-- Footer -->
+            <div class="org-card-footer">
+              <div class="org-stats">
+                <span class="org-stat">
+                  <i class="bi bi-calendar-event"></i>
+                  <span th:text="${org.eventsOrganized != null ? org.eventsOrganized : 0}">0</span> sự kiện
+                </span>
+                <span class="org-stat">
+                  <i class="bi bi-people"></i>
+                  <span th:text="${org.memberCount != null ? org.memberCount : 0}">0</span> TV
+                </span>
+              </div>
+              <div class="d-flex align-items-center gap-2">
+                <!-- Rating -->
+                <div th:if="${org.averageRating != null and org.totalReviews != null and org.totalReviews > 0}"
+                     class="org-rating">
+                  <i class="bi bi-star-fill"></i>
+                  <strong th:text="${#numbers.formatDecimal(org.averageRating,1,1)}">4.5</strong>
+                  <span th:text="'(' + ${org.totalReviews} + ')'"></span>
+                </div>
+                <a th:href="@{/organizations/{id}(id=${org.id})}" class="btn-view">
+                  Xem <i class="bi bi-arrow-right"></i>
+                </a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Empty -->
+      <div th:if="${#lists.isEmpty(organizations)}" class="empty-box">
+        <i class="bi bi-building-slash"></i>
+        <p class="fw-semibold mb-1">Không tìm thấy tổ chức nào</p>
+        <p class="small">Thử tìm kiếm với từ khoá khác.</p>
+        <a th:href="@{/organizations}" class="btn btn-outline-success btn-sm rounded-pill mt-2">
+          Xem tất cả tổ chức
+        </a>
+      </div>
+
+      <!-- Pagination -->
+      <nav th:if="${totalPages > 1}" class="mt-5 d-flex justify-content-center">
+        <ul class="pagination gap-1">
+          <li class="page-item" th:classappend="${currentPage == 0} ? 'disabled'">
+            <a class="page-link" th:href="@{/organizations(page=${currentPage-1})}">
+              <i class="bi bi-chevron-left"></i>
+            </a>
+          </li>
+          <li th:each="i : ${#numbers.sequence(0, totalPages-1)}"
+              class="page-item" th:classappend="${i == currentPage} ? 'active'">
+            <a class="page-link" th:href="@{/organizations(page=${i})}"
+               th:text="${i+1}">1</a>
+          </li>
+          <li class="page-item" th:classappend="${currentPage == totalPages-1} ? 'disabled'">
+            <a class="page-link" th:href="@{/organizations(page=${currentPage+1})}">
+              <i class="bi bi-chevron-right"></i>
+            </a>
+          </li>
+        </ul>
+      </nav>
+
+    </div>
   </div>
 </main>
+
 <footer th:replace="~{shared/layout :: footer}"></footer>
 <th:block th:replace="~{shared/layout :: scripts}"></th:block>
 </body>

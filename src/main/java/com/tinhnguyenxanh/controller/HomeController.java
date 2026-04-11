@@ -3,19 +3,23 @@ package com.tinhnguyenxanh.controller;
 import com.tinhnguyenxanh.dto.DonationDTO;
 import com.tinhnguyenxanh.entity.Donation;
 import com.tinhnguyenxanh.repository.DonationRepository;
+import com.tinhnguyenxanh.repository.EventFavoriteRepository;
+import com.tinhnguyenxanh.security.CustomUserDetails;
 import com.tinhnguyenxanh.service.EmailService;
 import com.tinhnguyenxanh.service.EventService;
 import com.tinhnguyenxanh.service.MomoService;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
+import org.springframework.security.core.annotation.AuthenticationPrincipal;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
+import java.util.Set;
+import java.util.stream.Collectors;
 
 @Controller
 @RequiredArgsConstructor
@@ -25,16 +29,29 @@ public class HomeController {
     private final DonationRepository donationRepo;
     private final MomoService momoService;
     private final EmailService emailService;
+    private final EventFavoriteRepository favoriteRepo;
 
     @GetMapping({"/", "/home"})
-    public String index(Model model) {
+    public String index(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         var allApproved = eventService.getApprovedEvents();
-        var top3 = allApproved.stream()
+        // Lấy tối đa 8 sự kiện nổi bật (nhiều đăng ký nhất) cho slider
+        var featuredEvents = allApproved.stream()
                 .sorted(java.util.Comparator.comparingInt(
                         com.tinhnguyenxanh.dto.EventDTO::getRegisteredCount).reversed())
                 .limit(3)
                 .toList();
-        model.addAttribute("approvedEvents", top3);
+        model.addAttribute("approvedEvents", featuredEvents);
+
+        // Truyền danh sách eventId đã yêu thích để frontend biết đánh dấu
+        if (userDetails != null) {
+            Set<Integer> favIds = favoriteRepo.findByUser_Id(userDetails.getId())
+                    .stream()
+                    .map(ef -> ef.getEvent().getId())
+                    .collect(Collectors.toSet());
+            model.addAttribute("favoritedIds", favIds);
+        } else {
+            model.addAttribute("favoritedIds", Set.of());
+        }
         return "home/index";
     }
 
@@ -55,9 +72,9 @@ public class HomeController {
                               RedirectAttributes redirectAttrs) {
         try {
             String body = String.format(
-                "<h3>Tin nhắn liên hệ từ website</h3>" +
-                "<p><b>Tên:</b> %s</p><p><b>Email:</b> %s</p><p><b>Nội dung:</b><br>%s</p>",
-                name, email, message);
+                    "<h3>Tin nhắn liên hệ từ website</h3>" +
+                            "<p><b>Tên:</b> %s</p><p><b>Email:</b> %s</p><p><b>Nội dung:</b><br>%s</p>",
+                    name, email, message);
             emailService.sendEmail("admin@tinhnguyenxanh.vn", "Liên hệ từ: " + name, body, email, name);
             redirectAttrs.addFlashAttribute("success", "Tin nhắn đã được gửi!");
         } catch (Exception e) {
