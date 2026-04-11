@@ -18,8 +18,13 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+import org.springframework.web.util.HtmlUtils;
 
+import java.net.URLEncoder;
+import java.nio.charset.StandardCharsets;
+import java.util.Base64;
 import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.Set;
 import java.util.stream.Collectors;
 
@@ -96,15 +101,34 @@ public class HomeController {
     @PostMapping("/contact")
     public String sendContact(@RequestParam String name,
                               @RequestParam String email,
+                              @RequestParam String subject,
                               @RequestParam String message,
                               RedirectAttributes redirectAttrs) {
+        String safeName = name != null ? name.trim() : "";
+        String safeEmail = email != null ? email.trim() : "";
+        String safeSubject = subject != null ? subject.trim() : "";
+        String safeMessage = message != null ? message.trim() : "";
+        if (safeName.isEmpty() || safeEmail.isEmpty() || safeSubject.isEmpty() || safeMessage.isEmpty()) {
+            redirectAttrs.addFlashAttribute("error", "Vui lòng điền đầy đủ thông tin.");
+            return "redirect:/contact";
+        }
         try {
+            String lineSubject = safeSubject.length() > 120 ? safeSubject.substring(0, 120) + "…" : safeSubject;
             String body = String.format(
                     "<h3>Tin nhắn liên hệ từ website</h3>" +
-                            "<p><b>Tên:</b> %s</p><p><b>Email:</b> %s</p><p><b>Nội dung:</b><br>%s</p>",
-                    name, email, message);
-            emailService.sendEmail("admin@tinhnguyenxanh.vn", "Liên hệ từ: " + name, body, email, name);
-            redirectAttrs.addFlashAttribute("success", "Tin nhắn đã được gửi!");
+                            "<p><b>Tên:</b> %s</p><p><b>Email:</b> %s</p><p><b>Chủ đề:</b> %s</p><p><b>Nội dung:</b><br>%s</p>",
+                    HtmlUtils.htmlEscape(safeName),
+                    HtmlUtils.htmlEscape(safeEmail),
+                    HtmlUtils.htmlEscape(safeSubject),
+                    HtmlUtils.htmlEscape(safeMessage).replace("\n", "<br/>"));
+            emailService.sendEmail(
+                    "admin@tinhnguyenxanh.vn",
+                    "[Liên hệ web] " + lineSubject,
+                    body,
+                    safeEmail,
+                    safeName);
+            redirectAttrs.addFlashAttribute("success",
+                    "Cảm ơn bạn đã liên hệ! Chúng tôi sẽ phản hồi sớm nhất có thể qua email.");
         } catch (Exception e) {
             redirectAttrs.addFlashAttribute("error", "Không thể gửi tin nhắn. Vui lòng thử lại.");
         }
@@ -135,47 +159,115 @@ public class HomeController {
                                 RedirectAttributes redirectAttrs) {
         if (result.hasErrors()) return "home/donate";
 
+        String method = dto.getPaymentMethod() != null ? dto.getPaymentMethod().trim().toLowerCase() : "momo";
+        if (!"momo".equals(method) && !"bank".equals(method)) {
+            method = "momo";
+        }
+
+        String phone = dto.getPhoneNumber() != null && !dto.getPhoneNumber().isBlank()
+                ? dto.getPhoneNumber().trim() : "—";
+
         Donation donation = Donation.builder()
-                .donorName(dto.getDonorName())
+                .donorName(dto.getDonorName().trim())
                 .amount(dto.getAmount())
-                .phoneNumber(dto.getPhoneNumber())
-                .message(dto.getMessage())
+                .phoneNumber(phone)
+                .message(dto.getMessage() != null && !dto.getMessage().isBlank() ? dto.getMessage().trim() : null)
+                .paymentMethod(method)
+                .paymentStatus("PENDING")
                 .isPaid(false)
                 .createdAt(LocalDateTime.now())
                 .build();
         donationRepo.save(donation);
 
         String orderId = "TNX" + donation.getId();
+        donation.setTransactionCode(orderId);
+        donationRepo.save(donation);
+
+        if ("bank".equals(method)) {
+            return "redirect:/payment/momo/result?txn=" + URLEncoder.encode(orderId, StandardCharsets.UTF_8)
+                    + "&amount=" + dto.getAmount().toPlainString()
+                    + "&method=bank";
+        }
+
+        String orderInfo = (dto.getMessage() != null && !dto.getMessage().isBlank())
+                ? dto.getMessage().trim()
+                : "Ủng hộ Tình Nguyện Xanh — " + dto.getDonorName().trim();
+        String rawExtraData = String.format("{\"donationId\":%d,\"orderId\":\"%s\"}", donation.getId(), orderId);
+        String extraData = Base64.getEncoder().encodeToString(rawExtraData.getBytes(StandardCharsets.UTF_8));
+
         String payUrl = momoService.createPayment(
-                "Quyên góp - " + dto.getDonorName(),
+                orderInfo,
                 orderId,
-                dto.getAmount().toBigInteger().toString());
+                dto.getAmount().toBigInteger().toString(),
+                extraData);
 
         if (payUrl.startsWith("http")) {
             return "redirect:" + payUrl;
         }
 
-        redirectAttrs.addFlashAttribute("error", "Không thể kết nối MoMo. Vui lòng thử lại.");
+        redirectAttrs.addFlashAttribute("error",
+                (payUrl != null && (payUrl.startsWith("LỖI") || payUrl.startsWith("Lỗi")))
+                        ? payUrl
+                        : "Không thể kết nối MoMo. Vui lòng thử lại.");
         return "redirect:/donate";
     }
 
     @GetMapping("/payment/momo/result")
     public String momoResult(@RequestParam(required = false) String orderId,
+                             @RequestParam(required = false) String txn,
                              @RequestParam(required = false) String resultCode,
+                             @RequestParam(required = false) String amount,
+                             @RequestParam(required = false) String method,
                              Model model) {
-        boolean success = "0".equals(resultCode);
-        if (success && orderId != null && orderId.startsWith("TNX")) {
-            try {
-                Integer donationId = Integer.parseInt(orderId.replace("TNX", ""));
-                donationRepo.findById(donationId).ifPresent(d -> {
-                    d.setPaid(true);
-                    d.setTransactionCode(orderId);
-                    donationRepo.save(d);
-                });
-            } catch (Exception ignored) {}
+        String code = (txn != null && !txn.isBlank()) ? txn : orderId;
+
+        Optional<Donation> donationOpt = (code != null && !code.isBlank())
+                ? donationRepo.findByTransactionCode(code)
+                : Optional.empty();
+
+        boolean rcOk = "0".equals(resultCode);
+        boolean rcFail = resultCode != null && !resultCode.isBlank() && !"0".equals(resultCode);
+
+        donationOpt.ifPresent(d -> {
+            if (!"momo".equalsIgnoreCase(d.getPaymentMethod())) {
+                return;
+            }
+            if (!"PENDING".equals(d.getPaymentStatus())) {
+                return;
+            }
+            if (rcOk) {
+                d.setPaymentStatus("SUCCESS");
+                d.setPaid(true);
+                donationRepo.save(d);
+            } else if (rcFail) {
+                d.setPaymentStatus("FAILED");
+                d.setPaid(false);
+                donationRepo.save(d);
+            }
+        });
+
+        Donation donation = donationOpt.orElse(null);
+        String display;
+        if (donation != null) {
+            if ("bank".equalsIgnoreCase(donation.getPaymentMethod())) {
+                display = "pending";
+            } else if ("SUCCESS".equals(donation.getPaymentStatus()) || donation.isPaid()) {
+                display = "success";
+            } else if ("FAILED".equals(donation.getPaymentStatus())) {
+                display = "failed";
+            } else {
+                display = "pending";
+            }
+            model.addAttribute("donation", donation);
+        } else {
+            display = "pending";
         }
-        model.addAttribute("success", success);
-        model.addAttribute("orderId", orderId);
+
+        model.addAttribute("displayStatus", display);
+        model.addAttribute("txn", code);
+        model.addAttribute("queryAmount", amount);
+        model.addAttribute("queryMethod", method != null ? method : "momo");
+        model.addAttribute("resultCode", resultCode);
         return "home/payment-result";
     }
 

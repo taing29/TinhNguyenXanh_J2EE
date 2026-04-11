@@ -7,6 +7,7 @@ import com.tinhnguyenxanh.repository.EventCategoryRepository;
 import com.tinhnguyenxanh.repository.VolunteerRepository;
 import com.tinhnguyenxanh.security.CustomUserDetails;
 import com.tinhnguyenxanh.service.*;
+import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.access.prepost.PreAuthorize;
@@ -16,6 +17,9 @@ import org.springframework.ui.Model;
 import org.springframework.validation.BindingResult;
 import org.springframework.web.bind.annotation.*;
 import org.springframework.web.servlet.mvc.support.RedirectAttributes;
+
+import java.io.IOException;
+import java.util.Comparator;
 
 @Controller
 @RequestMapping("/organizer")
@@ -28,6 +32,7 @@ public class OrganizerController {
     private final OrganizationService orgService;
     private final EventCategoryRepository categoryRepo;
     private final VolunteerRepository volunteerRepo;
+    private final OrganizerVolunteerExportService organizerExportService;
 
     private Organization getOrg(CustomUserDetails userDetails) {
         return orgService.getByUserId(userDetails.getId())
@@ -38,14 +43,20 @@ public class OrganizerController {
     @GetMapping({"/", "/dashboard"})
     public String dashboard(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
         Organization org = getOrg(userDetails);
-        var events = eventService.getEventsByOrganization(org.getId());
+        var eventsAll = eventService.getEventsByOrganization(org.getId());
+        var events = eventsAll.stream()
+                .sorted(Comparator.comparing(EventDTO::getStartTime).reversed())
+                .limit(12)
+                .toList();
+        long pendingRegs = registrationService.countPendingByOrganization(org.getId());
         model.addAttribute("org", org);
         model.addAttribute("events", events);
-        model.addAttribute("totalEvents", events.size());
-        model.addAttribute("pendingEvents", events.stream()
+        model.addAttribute("totalEvents", eventsAll.size());
+        model.addAttribute("pendingEvents", eventsAll.stream()
                 .filter(e -> "pending".equalsIgnoreCase(e.getStatus())).count());
-        model.addAttribute("approvedEvents", events.stream()
+        model.addAttribute("approvedEvents", eventsAll.stream()
                 .filter(e -> "approved".equalsIgnoreCase(e.getStatus())).count());
+        model.addAttribute("pendingVolunteerRegs", pendingRegs);
         return "organizer/dashboard";
     }
 
@@ -183,17 +194,56 @@ public class OrganizerController {
     }
 
     @GetMapping("/volunteers/{volunteerId}/profile")
-    public String volunteerProfile(@PathVariable Integer volunteerId, Model model) {
+    public String volunteerProfile(@PathVariable Integer volunteerId,
+                                   @AuthenticationPrincipal CustomUserDetails userDetails,
+                                   Model model,
+                                   RedirectAttributes redirectAttrs) {
+        Organization org = getOrg(userDetails);
+        if (!registrationService.volunteerLinkedToOrganization(volunteerId, org.getId())) {
+            redirectAttrs.addFlashAttribute("error",
+                    "Không tìm thấy tình nguyện viên hoặc bạn không có quyền xem hồ sơ này.");
+            return "redirect:/organizer/dashboard";
+        }
         var volunteer = volunteerRepo.findById(volunteerId)
                 .orElseThrow(() -> new RuntimeException("Không tìm thấy tình nguyện viên"));
         model.addAttribute("volunteer", volunteer);
+        model.addAttribute("org", org);
+        model.addAttribute("registrationHistory",
+                registrationService.getVolunteerHistoryForOrganization(volunteerId, org.getId()));
         return "organizer/volunteer-profile";
+    }
+
+    /** Tất cả đăng ký chờ duyệt trên các sự kiện của tổ chức. */
+    @GetMapping("/pending-volunteers")
+    public String pendingVolunteers(@AuthenticationPrincipal CustomUserDetails userDetails, Model model) {
+        Organization org = getOrg(userDetails);
+        model.addAttribute("org", org);
+        model.addAttribute("pendingList", registrationService.getPendingByOrganization(org.getId()));
+        return "organizer/pending-volunteers";
+    }
+
+    @GetMapping("/volunteers/export")
+    public void exportVolunteersExcel(@AuthenticationPrincipal CustomUserDetails userDetails,
+                                      HttpServletResponse response) throws IOException {
+        Organization org = getOrg(userDetails);
+        byte[] data = organizerExportService.buildVolunteersExcel(org.getId());
+        String filename = "danh-sach-tinh-nguyen-vien.xlsx";
+        response.setContentType("application/vnd.openxmlformats-officedocument.spreadsheetml.sheet");
+        response.setHeader("Content-Disposition", "attachment; filename=\"" + filename + "\"");
+        response.setContentLength(data.length);
+        response.getOutputStream().write(data);
     }
 
     @PostMapping("/registrations/{id}/approve")
     public String approveReg(@PathVariable Integer id,
+                             @AuthenticationPrincipal CustomUserDetails userDetails,
                              @RequestParam(required = false, defaultValue = "") String returnUrl,
                              RedirectAttributes redirectAttrs) {
+        Organization org = getOrg(userDetails);
+        if (!registrationService.belongsToOrganization(id, org.getId())) {
+            redirectAttrs.addFlashAttribute("error", "Không có quyền xử lý đăng ký này.");
+            return returnUrl.isBlank() ? "redirect:/organizer/events" : "redirect:" + returnUrl;
+        }
         // Kiểm tra slot trước khi approve để đưa ra thông báo rõ ràng
         var regOpt = registrationService.getById(id);
         if (regOpt.isPresent()) {
@@ -216,8 +266,14 @@ public class OrganizerController {
 
     @PostMapping("/registrations/{id}/reject")
     public String rejectReg(@PathVariable Integer id,
+                            @AuthenticationPrincipal CustomUserDetails userDetails,
                             @RequestParam(required = false, defaultValue = "") String returnUrl,
                             RedirectAttributes redirectAttrs) {
+        Organization org = getOrg(userDetails);
+        if (!registrationService.belongsToOrganization(id, org.getId())) {
+            redirectAttrs.addFlashAttribute("error", "Không có quyền xử lý đăng ký này.");
+            return returnUrl.isBlank() ? "redirect:/organizer/events" : "redirect:" + returnUrl;
+        }
         boolean ok = registrationService.reject(id);
         redirectAttrs.addFlashAttribute(ok ? "success" : "error",
                 ok ? "Đã từ chối tình nguyện viên" : "Không thể từ chối");

@@ -4,6 +4,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
@@ -18,6 +19,7 @@ import java.util.UUID;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class MomoService {
 
     @Value("${momo.api-url}")
@@ -38,10 +40,9 @@ public class MomoService {
     @Value("${momo.return-url}")
     private String returnUrl;
 
-    public String createPayment(String orderInfo, String orderId, String amount) {
+    public String createPayment(String orderInfo, String orderId, String amount, String extraData) {
         try {
             String requestId = UUID.randomUUID().toString();
-            String extraData = "";
             String requestType = "captureWallet";
 
             String rawHash = "accessKey=" + accessKey
@@ -55,6 +56,10 @@ public class MomoService {
                     + "&requestId=" + requestId
                     + "&requestType=" + requestType;
 
+            // DEBUG: Log rawHash prefix + length
+            log.info("MoMo create DEBUG - notifyUrl: '{}', requestId: {}, rawHash-len: {}, starts: '{}'", 
+                     notifyUrl, requestId, rawHash.length(), rawHash.substring(0, 100));
+
             String signature = computeHmacSha256(rawHash, secretKey);
 
             ObjectMapper mapper = new ObjectMapper();
@@ -63,7 +68,7 @@ public class MomoService {
             body.put("partnerName", "Tinh Nguyen Xanh");
             body.put("storeId", "MomoTestStore");
             body.put("requestId", requestId);
-            body.put("amount", amount);
+            body.put("amount", Long.parseLong(amount));
             body.put("orderId", orderId);
             body.put("orderInfo", orderInfo);
             body.put("redirectUrl", returnUrl);
@@ -86,10 +91,38 @@ public class MomoService {
             if (jsonResponse.has("payUrl")) {
                 return jsonResponse.get("payUrl").asText();
             } else {
+                log.error("MoMo response: {}", response.body());
                 return "LỖI MOMO: " + jsonResponse.path("message").asText("Unknown error");
             }
         } catch (Exception e) {
+            log.error("createPayment error", e);
             return "Lỗi xử lý thanh toán: " + e.getMessage();
+        }
+    }
+
+    public boolean verifyIpnSignature(String orderId, String resultCode, String transId, 
+                                    String extraData, String message, String receivedSignature) {
+        try {
+            // Exact rawHash for MoMo IPN - check docs for order, usually alphabetical or specific
+            String rawHash = "amount=" 
+                    + "&extraData=" + extraData
+                    + "&message=" + message
+                    + "&orderId=" + orderId
+                    + "&orderInfo="
+                    + "&orderType=captureWallet"
+                    + "&partnerCode=" + partnerCode
+                    + "&payType=captureWallet"
+                    + "&requestId="
+                    + "&resultCode=" + resultCode
+                    + "&transId=" + transId;
+
+            String expectedSig = computeHmacSha256(rawHash, secretKey);
+            boolean valid = expectedSig.equals(receivedSignature);
+            log.info("IPN verify valid: {}, expected: {}, received: {}", valid, expectedSig.substring(0,16) + "...", receivedSignature.substring(0,16) + "...");
+            return valid;
+        } catch (Exception e) {
+            log.error("verifyIpnSignature error", e);
+            return false;
         }
     }
 
