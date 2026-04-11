@@ -1,54 +1,52 @@
 <!DOCTYPE html>
 <html lang="vi" xmlns:th="http://www.thymeleaf.org">
-<head th:replace="~{shared/layout :: head('Đăng nhập')}">
+<head>
+  <meta charset="UTF-8"/><title>Đăng nhập - Tình Nguyện Xanh</title>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"/>
   <style>
-    body { background: #f1f8e9; }
-    .auth-wrapper { min-height: 100vh; display: flex; align-items: center; }
-    .card { border: none; box-shadow: 0 8px 32px rgba(46,125,50,.15); border-radius: 16px; }
+    body{background:#f1f8e9;min-height:100vh;display:flex;align-items:center}
+    .card{border:none;box-shadow:0 8px 32px rgba(46,125,50,.15);border-radius:16px}
+    .btn-primary{background:#2e7d32;border-color:#2e7d32}
+    .btn-primary:hover{background:#1b5e20}
+    .brand{color:#2e7d32;font-weight:700;font-size:1.5rem}
   </style>
 </head>
 <body>
-<div class="auth-wrapper">
-  <div class="container">
-    <div class="row justify-content-center">
-      <div class="col-md-5">
+<div class="container">
+  <div class="row justify-content-center">
+    <div class="col-md-5">
+      <div class="card p-4 mt-5">
         <div class="text-center mb-4">
-          <a th:href="@{/}" class="text-decoration-none">
-            <span style="color:#2e7d32;font-weight:700;font-size:1.8rem">🌿 Tình Nguyện Xanh</span>
-          </a>
+          <div class="brand">🌿 Tình Nguyện Xanh</div>
+          <p class="text-muted mt-1">Đăng nhập tài khoản</p>
         </div>
-        <div class="card p-4">
-          <div class="text-center mb-4">
-            <h4 class="fw-bold">Đăng nhập tài khoản</h4>
-            <p class="text-muted small">Chào mừng bạn trở lại!</p>
+
+        <div th:if="${error}" class="alert alert-danger" th:text="${error}"></div>
+        <div th:if="${message}" class="alert alert-success" th:text="${message}"></div>
+
+        <form th:action="@{/auth/login}" method="post">
+          <input type="hidden" th:name="${_csrf.parameterName}" th:value="${_csrf.token}"/>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Email</label>
+            <input type="email" name="email" class="form-control" placeholder="your@email.com" required/>
           </div>
+          <div class="mb-3">
+            <label class="form-label fw-semibold">Mật khẩu</label>
+            <input type="password" name="password" class="form-control" placeholder="••••••••" required/>
+          </div>
+          <div class="d-grid mt-4">
+            <button type="submit" class="btn btn-primary btn-lg">Đăng nhập</button>
+          </div>
+        </form>
 
-          <div th:if="${error}" class="alert alert-danger"><i class="bi bi-exclamation-circle me-2"></i><span th:text="${error}"></span></div>
-          <div th:if="${message}" class="alert alert-success"><i class="bi bi-check-circle me-2"></i><span th:text="${message}"></span></div>
-
-          <form action="/auth/login" method="post">
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Email</label>
-              <input type="email" name="email" class="form-control" placeholder="your@email.com" required/>
-            </div>
-            <div class="mb-3">
-              <label class="form-label fw-semibold">Mật khẩu</label>
-              <input type="password" name="password" class="form-control" placeholder="••••••••" required/>
-            </div>
-            <div class="d-grid mt-4">
-              <button type="submit" class="btn btn-primary btn-lg">Đăng nhập</button>
-            </div>
-          </form>
-
-          <hr/>
-          <p class="text-center mb-0">Chưa có tài khoản?
-            <a th:href="@{/auth/register}" class="text-success fw-bold">Đăng ký ngay</a>
-          </p>
-        </div>
+        <hr/>
+        <p class="text-center mb-0">Chưa có tài khoản?
+          <a th:href="@{/auth/register}" class="text-success fw-bold">Đăng ký ngay</a>
+        </p>
       </div>
     </div>
   </div>
 </div>
-<th:block th:replace="~{shared/layout :: scripts}"></th:block>
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 </body>
 </html>

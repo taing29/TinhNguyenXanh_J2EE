@@ -18,8 +18,6 @@ public interface OrganizationRepository extends JpaRepository<Organization, Inte
 
     List<Organization> findByVerifiedTrue();
 
-    List<Organization> findByIsApprovedTrue();
-
     List<Organization> findByIsApprovedFalse();
 
     @Query("SELECT o FROM Organization o LEFT JOIN FETCH o.user LEFT JOIN FETCH o.reviews r LEFT JOIN FETCH r.user WHERE o.id = :id")

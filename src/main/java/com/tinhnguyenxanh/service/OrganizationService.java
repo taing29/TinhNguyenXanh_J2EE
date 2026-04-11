@@ -20,10 +20,9 @@ public class OrganizationService {
     private final OrganizationRepository orgRepo;
     private final UserRepository userRepo;
     private final FileUploadService fileUploadService;
-    private final com.tinhnguyenxanh.repository.ReviewRepository reviewRepo;
 
     public List<OrganizationDTO> getAllVerified() {
-        return orgRepo.findByIsApprovedTrue().stream()
+        return orgRepo.findByVerifiedTrue().stream()
                 .map(this::toDTO)
                 .collect(Collectors.toList());
     }
@@ -156,10 +155,6 @@ public class OrganizationService {
         }
     }
 
-    public OrganizationDTO toPublicDTO(Organization o) {
-        return toDTO(o);
-    }
-
     private OrganizationDTO toDTO(Organization o) {
         OrganizationDTO dto = new OrganizationDTO();
         dto.setId(o.getId());
@@ -184,16 +179,8 @@ public class OrganizationService {
         dto.setVerified(o.isVerified());
         dto.setApproved(o.isApproved());
         dto.setJoinedDate(o.getJoinedDate());
-        // Compute live from reviews (stored field may be stale)
-        if (o.getReviews() != null && !o.getReviews().isEmpty()) {
-            double avg = o.getReviews().stream().mapToInt(r -> r.getRating()).average().orElse(0);
-            dto.setAverageRating(java.math.BigDecimal.valueOf(avg).setScale(1, java.math.RoundingMode.HALF_UP));
-            dto.setTotalReviews(o.getReviews().size());
-        } else {
-            // fallback to DB-stored value
-            dto.setAverageRating(o.getAverageRating());
-            dto.setTotalReviews(o.getTotalReviews() != null ? o.getTotalReviews() : 0);
-        }
+        dto.setAverageRating(o.getAverageRating());
+        dto.setTotalReviews(o.getTotalReviews());
         dto.setFoundedDate(o.getFoundedDate());
         dto.setTaxCode(o.getTaxCode());
         dto.setLegalRepresentative(o.getLegalRepresentative());

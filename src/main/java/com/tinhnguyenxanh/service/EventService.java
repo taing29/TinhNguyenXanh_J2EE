@@ -1,11 +1,16 @@
 package com.tinhnguyenxanh.service;
 
 import com.tinhnguyenxanh.dto.EventDTO;
+import com.tinhnguyenxanh.dto.EventRegistrationDTO;
 import com.tinhnguyenxanh.entity.*;
 import com.tinhnguyenxanh.repository.*;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
+
+import java.io.IOException;
+import java.nio.file.*;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -15,7 +20,7 @@ public class EventService {
 
     private final EventRepository eventRepo;
     private final EventRegistrationRepository registrationRepo;
-    private final EventReportRepository reportRepo;
+    private final VolunteerRepository volunteerRepo;
     private final EventCategoryRepository categoryRepo;
     private final FileUploadService fileUploadService;
 
@@ -144,58 +149,9 @@ public class EventService {
     }
 
     @Transactional
-    public boolean toggleHidden(Integer eventId, Integer organizationId) {
-        Event event = eventRepo.findById(eventId).orElse(null);
-        if (event == null) return false;
-        if (organizationId != null && !organizationId.equals(event.getOrganization().getId())) return false;
-        event.setHidden(!event.isHidden());
-        if (event.isHidden()) event.setHiddenAt(java.time.LocalDateTime.now());
-        else event.setHiddenAt(null);
-        eventRepo.save(event);
-        return true;
-    }
-
-    @Transactional
     public boolean deleteEvent(Integer eventId) {
         if (!eventRepo.existsById(eventId)) return false;
         eventRepo.deleteById(eventId);
-        return true;
-    }
-
-    @Transactional
-    public boolean approveReport(Integer reportId) {
-        EventReport report = reportRepo.findById(reportId).orElse(null);
-        if (report == null || !"Pending".equalsIgnoreCase(report.getStatus())) {
-            return false;
-        }
-        Event event = report.getEvent();
-        if (event == null) {
-            return false;
-        }
-        report.setStatus("Approved");
-        event.setHidden(true);
-        event.setHiddenReason("Ẩn do báo cáo được duyệt");
-        event.setHiddenAt(java.time.LocalDateTime.now());
-        reportRepo.save(report);
-        eventRepo.save(event);
-        return true;
-    }
-
-    @Transactional
-    public boolean rejectReport(Integer reportId) {
-        EventReport report = reportRepo.findById(reportId).orElse(null);
-        if (report == null || !"Pending".equalsIgnoreCase(report.getStatus())) {
-            return false;
-        }
-        Event event = report.getEvent();
-        report.setStatus("Rejected");
-        if (event != null) {
-            event.setHidden(false);
-            event.setHiddenReason(null);
-            event.setHiddenAt(null);
-            eventRepo.save(event);
-        }
-        reportRepo.save(report);
         return true;
     }
 
@@ -216,8 +172,6 @@ public class EventService {
                 .maxVolunteers(e.getMaxVolunteers())
                 .registeredCount(registrationRepo.countByEvent_IdAndStatusIgnoreCase(e.getId(), "Confirmed"))
                 .images(e.getImages())
-                .isHidden(e.isHidden())
-                .hiddenReason(e.getHiddenReason())
                 .build();
     }
 }

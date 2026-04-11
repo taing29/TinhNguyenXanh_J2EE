@@ -20,15 +20,8 @@ public interface EventRegistrationRepository extends JpaRepository<EventRegistra
 
     int countByEvent_IdAndStatusIgnoreCase(Integer eventId, String status);
 
-    int countByVolunteer_Id(Integer volunteerId);
-
-    int countByVolunteer_IdAndStatusIgnoreCase(Integer volunteerId, String status);
-
     Optional<EventRegistration> findByEvent_IdAndVolunteer_Id(Integer eventId, Integer volunteerId);
 
     @Query("SELECT r FROM EventRegistration r JOIN FETCH r.event WHERE r.volunteer.id = :vId ORDER BY r.registeredDate DESC")
     List<EventRegistration> findByVolunteerIdWithEvent(@Param("vId") Integer volunteerId);
-
-    @Query("SELECT r FROM EventRegistration r JOIN FETCH r.event JOIN FETCH r.volunteer ORDER BY r.registeredDate DESC")
-    List<EventRegistration> findAllWithEventAndVolunteer();
 }
